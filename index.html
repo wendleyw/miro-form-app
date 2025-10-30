@@ -91,6 +91,11 @@
             background: white;
         }
 
+        input[type="file"] {
+            padding: 8px;
+            cursor: pointer;
+        }
+
         input:focus, textarea:focus, select:focus {
             outline: none;
             border-color: #4262ff;
@@ -106,6 +111,45 @@
             font-size: 12px;
             color: #666;
             margin-top: 4px;
+        }
+
+        .file-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .file-preview-item {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 2px solid #e1e4e8;
+        }
+
+        .file-preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .file-preview-item .remove-btn {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         button {
@@ -231,6 +275,12 @@
                     <label for="references">References</label>
                     <textarea id="references" placeholder="Links, brands, or inspiration examples"></textarea>
                 </div>
+                <div class="form-group">
+                    <label for="inspirationImages">Inspiration Images</label>
+                    <input type="file" id="inspirationImages" accept="image/*" multiple>
+                    <div class="input-hint">Upload reference images (PNG, JPG, etc.)</div>
+                    <div class="file-preview" id="filePreview"></div>
+                </div>
             </div>
 
             <!-- Direction -->
@@ -306,6 +356,43 @@
     </div>
 
     <script>
+        // Store uploaded files
+        let uploadedFiles = [];
+
+        // Handle file upload preview
+        document.getElementById('inspirationImages').addEventListener('change', function(e) {
+            const files = Array.from(e.target.files);
+            const preview = document.getElementById('filePreview');
+            
+            files.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    uploadedFiles.push({
+                        name: file.name,
+                        data: e.target.result
+                    });
+                    
+                    const div = document.createElement('div');
+                    div.className = 'file-preview-item';
+                    div.innerHTML = `
+                        <img src="${e.target.result}" alt="Preview">
+                        <button type="button" class="remove-btn" data-index="${uploadedFiles.length - 1}">×</button>
+                    `;
+                    preview.appendChild(div);
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+
+        // Handle file removal
+        document.getElementById('filePreview').addEventListener('click', function(e) {
+            if (e.target.classList.contains('remove-btn')) {
+                const index = parseInt(e.target.dataset.index);
+                uploadedFiles.splice(index, 1);
+                e.target.closest('.file-preview-item').remove();
+            }
+        });
+
         // Initialize Miro SDK
         async function initMiro() {
             try {
@@ -319,14 +406,27 @@
 
         // Function to create complete workflow on canvas
         async function createOnboardingWorkflow(data) {
-            const startX = -400;
+            const startX = 0;
             const startY = 0;
-            const verticalSpacing = 280;
+            const horizontalSpacing = 700;
             const elements = [];
+
+            // Add project title
+            await miro.board.createText({
+                content: `<b>${data.projectName.toUpperCase()}</b>`,
+                style: {
+                    color: '#050038',
+                    fontSize: 32,
+                    textAlign: 'center'
+                },
+                x: startX + (horizontalSpacing * 3),
+                y: startY - 250,
+                width: 800
+            });
 
             // 1. Client sends project (Start)
             const start = await miro.board.createShape({
-                content: `<b>🎯 PROJECT STARTED</b><br><br><b>Client:</b> ${data.client}<br><b>Project:</b> ${data.projectName}${data.deadline ? '<br><b>Deadline:</b> ' + new Date(data.deadline).toLocaleDateString('en-US') : ''}`,
+                content: `<p style="text-align:center"><b style="font-size:18px">🎯 PROJECT STARTED</b></p><br><b>Client:</b> ${data.client}<br><b>Project:</b> ${data.projectName}${data.deadline ? '<br><b>Deadline:</b> ' + new Date(data.deadline).toLocaleDateString('en-US') : ''}`,
                 shape: 'round_rectangle',
                 style: {
                     fillColor: '#e6f3ff',
@@ -337,92 +437,143 @@
                 },
                 x: startX,
                 y: startY,
-                width: 320,
-                height: 160
+                width: 600,
+                height: 300
             });
             elements.push(start);
 
             // 2. Briefing
-            const briefing = await miro.board.createCard({
-                title: '💡 BRIEFING',
-                description: `<b>Objectives:</b><br>${data.objectives}<br><br>${data.targetAudience ? '<b>Target Audience:</b> ' + data.targetAudience + '<br><br>' : ''}${data.references ? '<b>References:</b><br>' + data.references : ''}`,
+            const briefingContent = `<p style="text-align:center"><b style="font-size:18px">💡 BRIEFING</b></p><br><b>Objectives:</b><br>${data.objectives}<br><br>${data.targetAudience ? '<b>Target Audience:</b> ' + data.targetAudience + '<br><br>' : ''}${data.references ? '<b>References:</b><br>' + data.references : ''}`;
+            const briefing = await miro.board.createShape({
+                content: briefingContent,
+                shape: 'round_rectangle',
                 style: {
-                    cardTheme: '#fff9b1'
+                    fillColor: '#fff9b1',
+                    borderColor: '#f5d128',
+                    borderWidth: 2,
+                    fontFamily: 'arial',
+                    fontSize: 14
                 },
-                x: startX,
-                y: startY + verticalSpacing * 1,
-                width: 320
+                x: startX + horizontalSpacing * 1,
+                y: startY,
+                width: 600,
+                height: 300
             });
             elements.push(briefing);
 
+            // Upload inspiration images below briefing if any
+            if (uploadedFiles.length > 0) {
+                let imageX = startX + horizontalSpacing * 1 - 250;
+                const imageY = startY + 200;
+                
+                for (let i = 0; i < Math.min(uploadedFiles.length, 3); i++) {
+                    try {
+                        await miro.board.createImage({
+                            url: uploadedFiles[i].data,
+                            x: imageX,
+                            y: imageY,
+                            width: 150
+                        });
+                        imageX += 180;
+                    } catch (error) {
+                        console.error('Error uploading image:', error);
+                    }
+                }
+            }
+
             // 3. Direction
-            const direction = await miro.board.createCard({
-                title: '🎨 DIRECTION',
-                description: data.creativeDirection || 'Awaiting creative and strategic direction definition',
+            const direction = await miro.board.createShape({
+                content: `<p style="text-align:center"><b style="font-size:18px">🎨 DIRECTION</b></p><br>${data.creativeDirection || 'Awaiting creative and strategic direction definition'}`,
+                shape: 'round_rectangle',
                 style: {
-                    cardTheme: '#f5d128'
+                    fillColor: '#ffd580',
+                    borderColor: '#ff9500',
+                    borderWidth: 2,
+                    fontFamily: 'arial',
+                    fontSize: 14
                 },
-                x: startX,
-                y: startY + verticalSpacing * 2,
-                width: 320
+                x: startX + horizontalSpacing * 2,
+                y: startY,
+                width: 600,
+                height: 300
             });
             elements.push(direction);
 
             // 4. Deliverables
-            const deliverables = await miro.board.createCard({
-                title: '📦 DELIVERABLES',
-                description: `<b>Items to produce:</b><br>${data.deliverables}`,
+            const deliverables = await miro.board.createShape({
+                content: `<p style="text-align:center"><b style="font-size:18px">📦 DELIVERABLES</b></p><br><b>Items to produce:</b><br>${data.deliverables}`,
+                shape: 'round_rectangle',
                 style: {
-                    cardTheme: '#d5f692'
+                    fillColor: '#d5f692',
+                    borderColor: '#7ed321',
+                    borderWidth: 2,
+                    fontFamily: 'arial',
+                    fontSize: 14
                 },
-                x: startX,
-                y: startY + verticalSpacing * 3,
-                width: 320
+                x: startX + horizontalSpacing * 3,
+                y: startY,
+                width: 600,
+                height: 300
             });
             elements.push(deliverables);
 
             // 5. Revisions
-            const revisions = await miro.board.createCard({
-                title: '🔄 REVISIONS',
-                description: `<b>Revision rounds:</b> ${data.revisionRounds}<br><br>• Feedback check<br>• Necessary adjustments<br>• Client approval`,
+            const revisions = await miro.board.createShape({
+                content: `<p style="text-align:center"><b style="font-size:18px">🔄 REVISIONS</b></p><br><b>Revision rounds:</b> ${data.revisionRounds}<br><br>• Feedback check<br>• Necessary adjustments<br>• Client approval`,
+                shape: 'round_rectangle',
                 style: {
-                    cardTheme: '#ffc0cb'
+                    fillColor: '#ffc0cb',
+                    borderColor: '#ff69b4',
+                    borderWidth: 2,
+                    fontFamily: 'arial',
+                    fontSize: 14
                 },
-                x: startX,
-                y: startY + verticalSpacing * 4,
-                width: 320
+                x: startX + horizontalSpacing * 4,
+                y: startY,
+                width: 600,
+                height: 300
             });
             elements.push(revisions);
 
             // 6. Finals
-            const finals = await miro.board.createCard({
-                title: '✅ FINALS',
-                description: 'Final deliverables approved and ready for publication/delivery',
+            const finals = await miro.board.createShape({
+                content: `<p style="text-align:center"><b style="font-size:18px">✅ FINALS</b></p><br>Final deliverables approved and ready for publication/delivery`,
+                shape: 'round_rectangle',
                 style: {
-                    cardTheme: '#b5e7a0'
+                    fillColor: '#b5e7a0',
+                    borderColor: '#7ed321',
+                    borderWidth: 2,
+                    fontFamily: 'arial',
+                    fontSize: 14
                 },
-                x: startX,
-                y: startY + verticalSpacing * 5,
-                width: 320
+                x: startX + horizontalSpacing * 5,
+                y: startY,
+                width: 600,
+                height: 300
             });
             elements.push(finals);
 
             // 7. KPI
-            const kpi = await miro.board.createCard({
-                title: '📊 KPI',
-                description: data.metrics ? `<b>Success metrics:</b><br>${data.metrics}` : 'Define project success metrics',
+            const kpi = await miro.board.createShape({
+                content: `<p style="text-align:center"><b style="font-size:18px">📊 KPI</b></p><br>${data.metrics ? '<b>Success metrics:</b><br>' + data.metrics : 'Define project success metrics'}`,
+                shape: 'round_rectangle',
                 style: {
-                    cardTheme: '#dfc0eb'
+                    fillColor: '#dfc0eb',
+                    borderColor: '#9b59b6',
+                    borderWidth: 2,
+                    fontFamily: 'arial',
+                    fontSize: 14
                 },
-                x: startX,
-                y: startY + verticalSpacing * 6,
-                width: 320
+                x: startX + horizontalSpacing * 6,
+                y: startY,
+                width: 600,
+                height: 300
             });
             elements.push(kpi);
 
             // 8. Project Completed
             const completion = await miro.board.createShape({
-                content: '<b>🎉 PROJECT COMPLETED</b><br><br>Success!',
+                content: `<p style="text-align:center"><b style="font-size:20px">🎉 PROJECT COMPLETED</b></p><br><p style="text-align:center">Success!</p>`,
                 shape: 'round_rectangle',
                 style: {
                     fillColor: '#c7f5d9',
@@ -431,10 +582,10 @@
                     fontFamily: 'arial',
                     fontSize: 16
                 },
-                x: startX,
-                y: startY + verticalSpacing * 7,
-                width: 320,
-                height: 120
+                x: startX + horizontalSpacing * 7,
+                y: startY,
+                width: 600,
+                height: 300
             });
             elements.push(completion);
 
@@ -443,31 +594,19 @@
                 await miro.board.createConnector({
                     start: {
                         item: elements[i].id,
+                        position: { x: 1, y: 0.5 }
                     },
                     end: {
                         item: elements[i + 1].id,
+                        position: { x: 0, y: 0.5 }
                     },
                     style: {
                         strokeColor: '#4262ff',
-                        strokeWidth: 3
-                    },
-                    shape: 'elbowed',
-                    captions: []
+                        strokeWidth: 4,
+                        endStrokeCap: 'stealth'
+                    }
                 });
             }
-
-            // Add project title
-            await miro.board.createText({
-                content: `<b>${data.projectName.toUpperCase()}</b>`,
-                style: {
-                    color: '#050038',
-                    fontSize: 32,
-                    textAlign: 'center'
-                },
-                x: startX,
-                y: startY - 200,
-                width: 400
-            });
 
             // Center view on created workflow
             await miro.board.viewport.zoomTo(elements);
@@ -508,6 +647,10 @@
                 await createOnboardingWorkflow(data);
                 loading.style.display = 'none';
                 successMsg.style.display = 'block';
+                
+                // Reset form and uploaded files
+                uploadedFiles = [];
+                document.getElementById('filePreview').innerHTML = '';
                 
                 setTimeout(() => {
                     form.reset();
