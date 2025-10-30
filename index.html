@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Miro Form App</title>
+    <title>Onboarding de Projetos - Miro</title>
     <script src="https://miro.com/app/static/sdk/v2/miro.js"></script>
     <style>
         * {
@@ -16,21 +16,50 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             padding: 20px;
             background: #f8f9fa;
+            overflow-x: hidden;
         }
 
         .container {
-            max-width: 400px;
+            max-width: 500px;
             margin: 0 auto;
             background: white;
-            padding: 24px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 28px;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
         }
 
         h1 {
             color: #050038;
-            font-size: 24px;
-            margin-bottom: 20px;
+            font-size: 26px;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .section {
+            margin-bottom: 28px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #4262ff;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #050038;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .form-group {
@@ -42,128 +71,239 @@
             margin-bottom: 6px;
             color: #333;
             font-weight: 500;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         input, textarea, select {
             width: 100%;
             padding: 10px 12px;
             border: 2px solid #e1e4e8;
-            border-radius: 4px;
+            border-radius: 6px;
             font-size: 14px;
             font-family: inherit;
-            transition: border-color 0.2s;
+            transition: all 0.2s;
+            background: white;
         }
 
         input:focus, textarea:focus, select:focus {
             outline: none;
             border-color: #4262ff;
+            box-shadow: 0 0 0 3px rgba(66, 98, 255, 0.1);
         }
 
         textarea {
             resize: vertical;
-            min-height: 80px;
+            min-height: 70px;
+        }
+
+        .input-hint {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
         }
 
         button {
             width: 100%;
-            padding: 12px;
-            background: #4262ff;
+            padding: 14px;
+            background: linear-gradient(135deg, #4262ff 0%, #2d4bd9 100%);
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: all 0.3s;
+            margin-top: 20px;
         }
 
         button:hover {
-            background: #2d4bd9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(66, 98, 255, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
         }
 
         button:disabled {
             background: #ccc;
             cursor: not-allowed;
+            transform: none;
         }
 
         .success-message {
             display: none;
-            padding: 12px;
+            padding: 16px;
             background: #d4edda;
             color: #155724;
-            border-radius: 4px;
-            margin-top: 16px;
+            border-radius: 8px;
+            margin-top: 20px;
             text-align: center;
+            font-weight: 500;
         }
 
         .error-message {
             display: none;
-            padding: 12px;
+            padding: 16px;
             background: #f8d7da;
             color: #721c24;
-            border-radius: 4px;
-            margin-top: 16px;
+            border-radius: 8px;
+            margin-top: 20px;
             text-align: center;
+            font-weight: 500;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4262ff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .emoji {
+            font-size: 20px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>📝 Adicionar ao Canvas</h1>
+        <div class="header">
+            <h1>🚀 Onboarding de Projeto</h1>
+            <p class="subtitle">Preencha as informações para criar o fluxo no canvas</p>
+        </div>
         
-        <form id="miroForm">
-            <div class="form-group">
-                <label for="titulo">Título</label>
-                <input type="text" id="titulo" name="titulo" required placeholder="Digite o título">
+        <form id="onboardingForm">
+            <!-- Informações do Projeto -->
+            <div class="section">
+                <div class="section-title">
+                    <span class="emoji">📋</span>
+                    Informações do Projeto
+                </div>
+                <div class="form-group">
+                    <label for="nomeProjeto">Nome do Projeto *</label>
+                    <input type="text" id="nomeProjeto" required placeholder="Ex: Campanha Verão 2025">
+                </div>
+                <div class="form-group">
+                    <label for="cliente">Cliente *</label>
+                    <input type="text" id="cliente" required placeholder="Nome do cliente">
+                </div>
+                <div class="form-group">
+                    <label for="deadline">Deadline</label>
+                    <input type="date" id="deadline">
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="descricao">Descrição</label>
-                <textarea id="descricao" name="descricao" placeholder="Digite a descrição"></textarea>
+            <!-- Briefing -->
+            <div class="section">
+                <div class="section-title">
+                    <span class="emoji">💡</span>
+                    Briefing
+                </div>
+                <div class="form-group">
+                    <label for="objetivos">Objetivos do Projeto *</label>
+                    <textarea id="objetivos" required placeholder="Quais são os principais objetivos?"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="publicoAlvo">Público-Alvo</label>
+                    <input type="text" id="publicoAlvo" placeholder="Ex: Jovens adultos 18-35 anos">
+                </div>
+                <div class="form-group">
+                    <label for="referencias">Referências</label>
+                    <textarea id="referencias" placeholder="Links, marcas ou exemplos de inspiração"></textarea>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="tipo">Tipo de Item</label>
-                <select id="tipo" name="tipo">
-                    <option value="sticky">Sticky Note</option>
-                    <option value="shape">Forma</option>
-                    <option value="text">Texto</option>
-                    <option value="card">Card</option>
-                </select>
+            <!-- Direction -->
+            <div class="section">
+                <div class="section-title">
+                    <span class="emoji">🎨</span>
+                    Direction
+                </div>
+                <div class="form-group">
+                    <label for="direcaoCriativa">Direção Criativa/Estratégica</label>
+                    <textarea id="direcaoCriativa" placeholder="Conceito, tom de voz, estilo visual..."></textarea>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="cor">Cor</label>
-                <select id="cor" name="cor">
-                    <option value="yellow">Amarelo</option>
-                    <option value="blue">Azul</option>
-                    <option value="green">Verde</option>
-                    <option value="pink">Rosa</option>
-                    <option value="violet">Roxo</option>
-                    <option value="red">Vermelho</option>
-                    <option value="orange">Laranja</option>
-                </select>
+            <!-- Deliverables -->
+            <div class="section">
+                <div class="section-title">
+                    <span class="emoji">📦</span>
+                    Deliverables
+                </div>
+                <div class="form-group">
+                    <label for="entregaveis">Itens a Produzir *</label>
+                    <textarea id="entregaveis" required placeholder="Ex: 3 posts Instagram, 1 vídeo, landing page..."></textarea>
+                    <div class="input-hint">Liste todos os entregáveis necessários</div>
+                </div>
             </div>
 
-            <button type="submit" id="submitBtn">Adicionar ao Canvas</button>
+            <!-- Revisões -->
+            <div class="section">
+                <div class="section-title">
+                    <span class="emoji">🔄</span>
+                    Revisões
+                </div>
+                <div class="form-group">
+                    <label for="rodadasRevisao">Rodadas de Revisão</label>
+                    <select id="rodadasRevisao">
+                        <option value="1">1 rodada</option>
+                        <option value="2" selected>2 rodadas</option>
+                        <option value="3">3 rodadas</option>
+                        <option value="ilimitado">Ilimitado</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- KPIs -->
+            <div class="section">
+                <div class="section-title">
+                    <span class="emoji">📊</span>
+                    KPIs
+                </div>
+                <div class="form-group">
+                    <label for="metricas">Métricas de Sucesso</label>
+                    <textarea id="metricas" placeholder="Ex: 10k impressões, 5% engajamento, 100 conversões..."></textarea>
+                </div>
+            </div>
+
+            <button type="submit" id="submitBtn">
+                Criar Fluxo no Canvas
+            </button>
         </form>
 
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 12px; color: #666;">Criando seu projeto no canvas...</p>
+        </div>
+
         <div class="success-message" id="successMsg">
-            ✓ Item adicionado com sucesso!
+            ✓ Projeto criado com sucesso no canvas!
         </div>
         <div class="error-message" id="errorMsg">
-            ✗ Erro ao adicionar item. Tente novamente.
+            ✗ Erro ao criar projeto. Verifique sua conexão e tente novamente.
         </div>
     </div>
 
     <script>
-        let miroInstance;
-
         // Inicializar SDK do Miro
         async function initMiro() {
             try {
-                miroInstance = await miro.board.ui.on('icon:click', async () => {
+                await miro.board.ui.on('icon:click', async () => {
                     await miro.board.ui.openPanel({url: window.location.href});
                 });
             } catch (error) {
@@ -171,130 +311,212 @@
             }
         }
 
-        // Mapear cores para o formato do Miro
-        const colorMap = {
-            'yellow': 'light_yellow',
-            'blue': 'light_blue',
-            'green': 'light_green',
-            'pink': 'light_pink',
-            'violet': 'violet',
-            'red': 'red',
-            'orange': 'orange'
-        };
+        // Função para criar o fluxo completo no canvas
+        async function criarFluxoOnboarding(dados) {
+            const startX = -400;
+            const startY = 0;
+            const verticalSpacing = 280;
+            const elementos = [];
 
-        // Função para adicionar item ao canvas
-        async function adicionarAoCanvas(dados) {
-            try {
-                const x = Math.random() * 1000;
-                const y = Math.random() * 1000;
+            // 1. Cliente envia projeto (Início)
+            const inicio = await miro.board.createShape({
+                content: `<b>🎯 PROJETO INICIADO</b><br><br><b>Cliente:</b> ${dados.cliente}<br><b>Projeto:</b> ${dados.nomeProjeto}${dados.deadline ? '<br><b>Deadline:</b> ' + new Date(dados.deadline).toLocaleDateString('pt-BR') : ''}`,
+                shape: 'round_rectangle',
+                style: {
+                    fillColor: '#e6f3ff',
+                    borderColor: '#4262ff',
+                    borderWidth: 3,
+                    fontFamily: 'arial',
+                    fontSize: 14
+                },
+                x: startX,
+                y: startY,
+                width: 320,
+                height: 160
+            });
+            elementos.push(inicio);
 
-                let item;
-                const conteudo = dados.descricao 
-                    ? `<b>${dados.titulo}</b><br>${dados.descricao}`
-                    : `<b>${dados.titulo}</b>`;
+            // 2. Briefing
+            const briefing = await miro.board.createCard({
+                title: '💡 BRIEFING',
+                description: `<b>Objetivos:</b><br>${dados.objetivos}<br><br>${dados.publicoAlvo ? '<b>Público:</b> ' + dados.publicoAlvo + '<br><br>' : ''}${dados.referencias ? '<b>Referências:</b><br>' + dados.referencias : ''}`,
+                style: {
+                    cardTheme: '#fff9b1'
+                },
+                x: startX,
+                y: startY + verticalSpacing * 1,
+                width: 320
+            });
+            elementos.push(briefing);
 
-                switch(dados.tipo) {
-                    case 'sticky':
-                        item = await miro.board.createStickyNote({
-                            content: conteudo,
-                            style: {
-                                fillColor: colorMap[dados.cor]
-                            },
-                            x: x,
-                            y: y
-                        });
-                        break;
+            // 3. Direction
+            const direction = await miro.board.createCard({
+                title: '🎨 DIRECTION',
+                description: dados.direcaoCriativa || 'Aguardando definição da direção criativa e estratégica',
+                style: {
+                    cardTheme: '#f5d128'
+                },
+                x: startX,
+                y: startY + verticalSpacing * 2,
+                width: 320
+            });
+            elementos.push(direction);
 
-                    case 'shape':
-                        item = await miro.board.createShape({
-                            content: conteudo,
-                            shape: 'rectangle',
-                            style: {
-                                fillColor: colorMap[dados.cor]
-                            },
-                            x: x,
-                            y: y,
-                            width: 200,
-                            height: 100
-                        });
-                        break;
+            // 4. Deliverables
+            const deliverables = await miro.board.createCard({
+                title: '📦 DELIVERABLES',
+                description: `<b>Itens a produzir:</b><br>${dados.entregaveis}`,
+                style: {
+                    cardTheme: '#d5f692'
+                },
+                x: startX,
+                y: startY + verticalSpacing * 3,
+                width: 320
+            });
+            elementos.push(deliverables);
 
-                    case 'text':
-                        item = await miro.board.createText({
-                            content: conteudo,
-                            style: {
-                                color: '#1a1a1a',
-                                fillColor: 'transparent',
-                                fontSize: 18
-                            },
-                            x: x,
-                            y: y,
-                            width: 250
-                        });
-                        break;
+            // 5. Revisões
+            const revisoes = await miro.board.createCard({
+                title: '🔄 REVISÕES',
+                description: `<b>Rodadas de revisão:</b> ${dados.rodadasRevisao}<br><br>• Check de feedback<br>• Ajustes necessários<br>• Aprovação do cliente`,
+                style: {
+                    cardTheme: '#ffc0cb'
+                },
+                x: startX,
+                y: startY + verticalSpacing * 4,
+                width: 320
+            });
+            elementos.push(revisoes);
 
-                    case 'card':
-                        item = await miro.board.createCard({
-                            title: dados.titulo,
-                            description: dados.descricao,
-                            style: {
-                                cardTheme: colorMap[dados.cor]
-                            },
-                            x: x,
-                            y: y
-                        });
-                        break;
-                }
+            // 6. Finals
+            const finals = await miro.board.createCard({
+                title: '✅ FINALS',
+                description: 'Entregáveis finais aprovados e prontos para publicação/entrega',
+                style: {
+                    cardTheme: '#b5e7a0'
+                },
+                x: startX,
+                y: startY + verticalSpacing * 5,
+                width: 320
+            });
+            elementos.push(finals);
 
-                // Centralizar viewport no novo item
-                if (item) {
-                    await miro.board.viewport.zoomTo(item);
-                }
+            // 7. KPI
+            const kpi = await miro.board.createCard({
+                title: '📊 KPI',
+                description: dados.metricas ? `<b>Métricas de sucesso:</b><br>${dados.metricas}` : 'Definir métricas de sucesso do projeto',
+                style: {
+                    cardTheme: '#dfc0eb'
+                },
+                x: startX,
+                y: startY + verticalSpacing * 6,
+                width: 320
+            });
+            elementos.push(kpi);
 
-                return true;
-            } catch (error) {
-                console.error('Erro ao adicionar ao canvas:', error);
-                throw error;
+            // 8. Projeto Concluído
+            const conclusao = await miro.board.createShape({
+                content: '<b>🎉 PROJETO CONCLUÍDO</b><br><br>Sucesso!',
+                shape: 'round_rectangle',
+                style: {
+                    fillColor: '#c7f5d9',
+                    borderColor: '#00c875',
+                    borderWidth: 3,
+                    fontFamily: 'arial',
+                    fontSize: 16
+                },
+                x: startX,
+                y: startY + verticalSpacing * 7,
+                width: 320,
+                height: 120
+            });
+            elementos.push(conclusao);
+
+            // Criar conectores (setas) entre os elementos
+            for (let i = 0; i < elementos.length - 1; i++) {
+                await miro.board.createConnector({
+                    start: {
+                        item: elementos[i].id,
+                    },
+                    end: {
+                        item: elementos[i + 1].id,
+                    },
+                    style: {
+                        strokeColor: '#4262ff',
+                        strokeWidth: 3
+                    },
+                    shape: 'elbowed',
+                    captions: []
+                });
             }
+
+            // Adicionar título do projeto
+            await miro.board.createText({
+                content: `<b>${dados.nomeProjeto.toUpperCase()}</b>`,
+                style: {
+                    color: '#050038',
+                    fontSize: 32,
+                    textAlign: 'center'
+                },
+                x: startX,
+                y: startY - 200,
+                width: 400
+            });
+
+            // Centralizar visualização no fluxo criado
+            await miro.board.viewport.zoomTo(elementos);
+
+            return true;
         }
 
         // Handler do formulário
-        document.getElementById('miroForm').addEventListener('submit', async (e) => {
+        document.getElementById('onboardingForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            const form = document.getElementById('onboardingForm');
             const submitBtn = document.getElementById('submitBtn');
             const successMsg = document.getElementById('successMsg');
             const errorMsg = document.getElementById('errorMsg');
+            const loading = document.getElementById('loading');
 
             // Resetar mensagens
             successMsg.style.display = 'none';
             errorMsg.style.display = 'none';
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Adicionando...';
+            form.style.display = 'none';
+            loading.style.display = 'block';
 
             const dados = {
-                titulo: document.getElementById('titulo').value,
-                descricao: document.getElementById('descricao').value,
-                tipo: document.getElementById('tipo').value,
-                cor: document.getElementById('cor').value
+                nomeProjeto: document.getElementById('nomeProjeto').value,
+                cliente: document.getElementById('cliente').value,
+                deadline: document.getElementById('deadline').value,
+                objetivos: document.getElementById('objetivos').value,
+                publicoAlvo: document.getElementById('publicoAlvo').value,
+                referencias: document.getElementById('referencias').value,
+                direcaoCriativa: document.getElementById('direcaoCriativa').value,
+                entregaveis: document.getElementById('entregaveis').value,
+                rodadasRevisao: document.getElementById('rodadasRevisao').value,
+                metricas: document.getElementById('metricas').value
             };
 
             try {
-                await adicionarAoCanvas(dados);
+                await criarFluxoOnboarding(dados);
+                loading.style.display = 'none';
                 successMsg.style.display = 'block';
-                document.getElementById('miroForm').reset();
                 
                 setTimeout(() => {
+                    form.reset();
+                    form.style.display = 'block';
                     successMsg.style.display = 'none';
                 }, 3000);
             } catch (error) {
+                console.error('Erro ao criar fluxo:', error);
+                loading.style.display = 'none';
+                form.style.display = 'block';
                 errorMsg.style.display = 'block';
+                
                 setTimeout(() => {
                     errorMsg.style.display = 'none';
-                }, 3000);
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Adicionar ao Canvas';
+                }, 4000);
             }
         });
 
