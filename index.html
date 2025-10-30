@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Project Onboarding - Miro</title>
+    <title>Project Brief - Miro</title>
     <script src="https://miro.com/app/static/sdk/v2/miro.js"></script>
     <style>
         * {
@@ -21,28 +21,31 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             padding: 20px;
-            background: #f8f9fa;
+            background: #f5f5f5;
         }
 
         .container {
-            max-width: 500px;
+            max-width: 600px;
             margin: 0 auto;
             background: white;
-            padding: 28px;
+            padding: 32px;
             border-radius: 12px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
             margin-bottom: 40px;
         }
 
         .header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 3px solid #000;
         }
 
         h1 {
-            color: #050038;
-            font-size: 26px;
+            color: #000;
+            font-size: 28px;
             margin-bottom: 8px;
+            font-weight: 700;
         }
 
         .subtitle {
@@ -51,39 +54,36 @@
         }
 
         .section {
-            margin-bottom: 28px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border-left: 4px solid #4262ff;
+            margin-bottom: 32px;
         }
 
         .section-title {
             font-size: 16px;
-            font-weight: 600;
-            color: #050038;
-            margin-bottom: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            font-weight: 700;
+            color: #000;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e0e0e0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .form-group {
-            margin-bottom: 16px;
+            margin-bottom: 20px;
         }
 
         label {
             display: block;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             color: #333;
-            font-weight: 500;
-            font-size: 13px;
+            font-weight: 600;
+            font-size: 14px;
         }
 
         input, textarea, select {
             width: 100%;
-            padding: 10px 12px;
-            border: 2px solid #e1e4e8;
+            padding: 12px 14px;
+            border: 2px solid #e0e0e0;
             border-radius: 6px;
             font-size: 14px;
             font-family: inherit;
@@ -92,41 +92,44 @@
         }
 
         input[type="file"] {
-            padding: 8px;
+            padding: 10px;
             cursor: pointer;
         }
 
         input:focus, textarea:focus, select:focus {
             outline: none;
-            border-color: #4262ff;
-            box-shadow: 0 0 0 3px rgba(66, 98, 255, 0.1);
+            border-color: #000;
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
         }
 
         textarea {
             resize: vertical;
-            min-height: 70px;
+            min-height: 90px;
+            line-height: 1.5;
         }
 
         .input-hint {
             font-size: 12px;
-            color: #666;
-            margin-top: 4px;
+            color: #999;
+            margin-top: 6px;
+            font-style: italic;
         }
 
         .file-preview {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 10px;
+            gap: 10px;
+            margin-top: 12px;
         }
 
         .file-preview-item {
             position: relative;
-            width: 80px;
-            height: 80px;
-            border-radius: 6px;
+            width: 90px;
+            height: 90px;
+            border-radius: 8px;
             overflow: hidden;
-            border: 2px solid #e1e4e8;
+            border: 2px solid #e0e0e0;
+            background: #f9f9f9;
         }
 
         .file-preview-item img {
@@ -137,38 +140,66 @@
 
         .file-preview-item .remove-btn {
             position: absolute;
-            top: 2px;
-            right: 2px;
-            background: #ff4444;
+            top: 4px;
+            right: 4px;
+            background: #000;
             color: white;
             border: none;
             border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            font-size: 12px;
+            width: 24px;
+            height: 24px;
+            font-size: 14px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-weight: bold;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+
+        .checkbox-item label {
+            margin: 0;
+            font-weight: 400;
+            font-size: 13px;
         }
 
         button {
             width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #4262ff 0%, #2d4bd9 100%);
+            padding: 16px;
+            background: #000;
             color: white;
             border: none;
             border-radius: 8px;
             font-size: 16px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
             transition: all 0.3s;
-            margin-top: 20px;
+            margin-top: 24px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         button:hover {
+            background: #333;
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(66, 98, 255, 0.3);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
         }
 
         button:active {
@@ -183,38 +214,40 @@
 
         .success-message {
             display: none;
-            padding: 16px;
+            padding: 18px;
             background: #d4edda;
             color: #155724;
             border-radius: 8px;
             margin-top: 20px;
             text-align: center;
-            font-weight: 500;
+            font-weight: 600;
+            border: 2px solid #c3e6cb;
         }
 
         .error-message {
             display: none;
-            padding: 16px;
+            padding: 18px;
             background: #f8d7da;
             color: #721c24;
             border-radius: 8px;
             margin-top: 20px;
             text-align: center;
-            font-weight: 500;
+            font-weight: 600;
+            border: 2px solid #f5c6cb;
         }
 
         .loading {
             display: none;
             text-align: center;
-            padding: 20px;
+            padding: 24px;
         }
 
         .spinner {
             border: 3px solid #f3f3f3;
-            border-top: 3px solid #4262ff;
+            border-top: 3px solid #000;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             animation: spin 1s linear infinite;
             margin: 0 auto;
         }
@@ -224,139 +257,192 @@
             100% { transform: rotate(360deg); }
         }
 
-        .emoji {
-            font-size: 20px;
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        @media (max-width: 600px) {
+            .row {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🚀 Project Onboarding</h1>
-            <p class="subtitle">Fill in the information to create the workflow on canvas</p>
+            <h1>📋 PROJECT BRIEF</h1>
+            <p class="subtitle">Complete all fields to create your project template on canvas</p>
         </div>
         
-        <form id="onboardingForm">
+        <form id="briefForm">
             <!-- Project Information -->
             <div class="section">
-                <div class="section-title">
-                    <span class="emoji">📋</span>
-                    Project Information
-                </div>
+                <div class="section-title">Project Information</div>
+                
                 <div class="form-group">
                     <label for="projectName">Project Name *</label>
-                    <input type="text" id="projectName" required placeholder="e.g., Summer Campaign 2025">
+                    <input type="text" id="projectName" required placeholder="Enter project name">
                 </div>
+
                 <div class="form-group">
-                    <label for="client">Client *</label>
-                    <input type="text" id="client" required placeholder="Client name">
+                    <label for="projectDescription">Project Overview / Description *</label>
+                    <textarea id="projectDescription" required placeholder="Project idea, goals, purpose, and context. Include the 'why' behind the project."></textarea>
                 </div>
-                <div class="form-group">
-                    <label for="deadline">Deadline</label>
-                    <input type="date" id="deadline">
+
+                <div class="row">
+                    <div class="form-group">
+                        <label for="client">Client Name</label>
+                        <input type="text" id="client" placeholder="Client or company name">
+                    </div>
+                    <div class="form-group">
+                        <label for="deadline">Final Delivery Date</label>
+                        <input type="date" id="deadline">
+                    </div>
                 </div>
             </div>
 
-            <!-- Briefing -->
+            <!-- Target Audience -->
             <div class="section">
-                <div class="section-title">
-                    <span class="emoji">💡</span>
-                    Briefing
-                </div>
+                <div class="section-title">Target Audience</div>
+                
                 <div class="form-group">
-                    <label for="objectives">Project Objectives *</label>
-                    <textarea id="objectives" required placeholder="What are the main objectives?"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="targetAudience">Target Audience</label>
-                    <input type="text" id="targetAudience" placeholder="e.g., Young adults 18-35 years">
-                </div>
-                <div class="form-group">
-                    <label for="references">References</label>
-                    <textarea id="references" placeholder="Links, brands, or inspiration examples"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="inspirationImages">Inspiration Images</label>
-                    <input type="file" id="inspirationImages" accept="image/*" multiple>
-                    <div class="input-hint">Upload reference images (PNG, JPG, etc.)</div>
-                    <div class="file-preview" id="filePreview"></div>
+                    <label for="targetAudience">Who is the target audience? *</label>
+                    <textarea id="targetAudience" required placeholder="Demographics, interests, behaviors, pain points..."></textarea>
                 </div>
             </div>
 
-            <!-- Direction -->
+            <!-- Goals & Objectives -->
             <div class="section">
-                <div class="section-title">
-                    <span class="emoji">🎨</span>
-                    Direction
-                </div>
+                <div class="section-title">Goals / Objectives</div>
+                
                 <div class="form-group">
-                    <label for="creativeDirection">Creative/Strategic Direction</label>
-                    <textarea id="creativeDirection" placeholder="Concept, tone of voice, visual style..."></textarea>
+                    <label for="objectives">What are the expected outcomes? *</label>
+                    <textarea id="objectives" required placeholder="E.g., brand awareness, engagement, conversion, internal use..."></textarea>
+                </div>
+            </div>
+
+            <!-- Messaging & Copy -->
+            <div class="section">
+                <div class="section-title">Final Messaging / Copy</div>
+                
+                <div class="form-group">
+                    <label for="messaging">Key messages and tone</label>
+                    <textarea id="messaging" placeholder="Main messages, taglines, tone of voice..."></textarea>
                 </div>
             </div>
 
             <!-- Deliverables -->
             <div class="section">
-                <div class="section-title">
-                    <span class="emoji">📦</span>
-                    Deliverables
-                </div>
+                <div class="section-title">Deliverables</div>
+                
                 <div class="form-group">
-                    <label for="deliverables">Items to Produce *</label>
-                    <textarea id="deliverables" required placeholder="e.g., 3 Instagram posts, 1 video, landing page..."></textarea>
-                    <div class="input-hint">List all required deliverables</div>
+                    <label for="fileTypes">File type(s) *</label>
+                    <input type="text" id="fileTypes" required placeholder="e.g., JPG, PNG, PDF, AI, MP4">
+                    <div class="input-hint">Specify all required file formats</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="fileSizes">File sizes / dimensions *</label>
+                    <input type="text" id="fileSizes" required placeholder="e.g., 1080x1920px, print 300dpi">
+                    <div class="input-hint">Include any technical specifications</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="numberOfAssets">Number of assets *</label>
+                    <input type="text" id="numberOfAssets" required placeholder="e.g., 3 hero images, 1 social carousel, etc.">
                 </div>
             </div>
 
-            <!-- Revisions -->
+            <!-- Timeline -->
             <div class="section">
-                <div class="section-title">
-                    <span class="emoji">🔄</span>
-                    Revisions
-                </div>
+                <div class="section-title">Timeline / Key Milestones</div>
+                
                 <div class="form-group">
-                    <label for="revisionRounds">Revision Rounds</label>
-                    <select id="revisionRounds">
-                        <option value="1">1 round</option>
-                        <option value="2" selected>2 rounds</option>
-                        <option value="3">3 rounds</option>
-                        <option value="unlimited">Unlimited</option>
-                    </select>
+                    <label for="draftDue">Draft due</label>
+                    <input type="date" id="draftDue">
+                </div>
+
+                <div class="form-group">
+                    <label for="reviewDue">Review</label>
+                    <input type="date" id="reviewDue">
+                </div>
+
+                <div class="form-group">
+                    <label for="finalDelivery">Final delivery</label>
+                    <input type="date" id="finalDelivery">
                 </div>
             </div>
 
-            <!-- KPIs -->
+            <!-- Resource Links -->
             <div class="section">
-                <div class="section-title">
-                    <span class="emoji">📊</span>
-                    KPIs
-                </div>
+                <div class="section-title">Resource Links / Assets</div>
+                
                 <div class="form-group">
-                    <label for="metrics">Success Metrics</label>
-                    <textarea id="metrics" placeholder="e.g., 10k impressions, 5% engagement, 100 conversions..."></textarea>
+                    <label for="resourceLinks">Folder or links to resources</label>
+                    <textarea id="resourceLinks" placeholder="Links to logos, stock images, fonts, brand guidelines, icons, previous campaigns, etc."></textarea>
+                    <div class="input-hint">Provide any assets needed for the project</div>
+                </div>
+            </div>
+
+            <!-- Inspirations -->
+            <div class="section">
+                <div class="section-title">Inspirations / References</div>
+                
+                <div class="form-group">
+                    <label for="references">Links, screenshots, mood boards, examples</label>
+                    <textarea id="references" placeholder="Links, references, or examples of work you like or want to emulate"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="inspirationImages">Upload Reference Images</label>
+                    <input type="file" id="inspirationImages" accept="image/*" multiple>
+                    <div class="input-hint">Upload mood boards, examples, screenshots (PNG, JPG, etc.)</div>
+                    <div class="file-preview" id="filePreview"></div>
+                </div>
+            </div>
+
+            <!-- Style / Design Notes -->
+            <div class="section">
+                <div class="section-title">Style / Design Notes</div>
+                
+                <div class="form-group">
+                    <label for="designNotes">Visual style preferences</label>
+                    <textarea id="designNotes" placeholder="Colors, typography, illustration style, photography style, motion style, etc."></textarea>
+                </div>
+            </div>
+
+            <!-- Additional Notes -->
+            <div class="section">
+                <div class="section-title">Additional Notes</div>
+                
+                <div class="form-group">
+                    <label for="additionalNotes">Special Requirements / Notes</label>
+                    <textarea id="additionalNotes" placeholder="Any other important information, constraints, or considerations..."></textarea>
                 </div>
             </div>
 
             <button type="submit" id="submitBtn">
-                Create Workflow on Canvas
+                Create Project Template
             </button>
         </form>
 
         <div class="loading" id="loading">
             <div class="spinner"></div>
-            <p style="margin-top: 12px; color: #666;">Creating your project on canvas...</p>
+            <p style="margin-top: 16px; color: #666; font-weight: 600;">Creating your project template...</p>
         </div>
 
         <div class="success-message" id="successMsg">
-            ✓ Project created successfully on canvas!
+            ✓ Project template created successfully on canvas!
         </div>
         <div class="error-message" id="errorMsg">
-            ✗ Error creating project. Check your connection and try again.
+            ✗ Error creating template. Please check your connection and try again.
         </div>
     </div>
 
     <script>
-        // Store uploaded files
         let uploadedFiles = [];
 
         // Handle file upload preview
@@ -364,7 +450,7 @@
             const files = Array.from(e.target.files);
             const preview = document.getElementById('filePreview');
             
-            files.forEach((file, index) => {
+            files.forEach((file) => {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     uploadedFiles.push({
@@ -404,221 +490,210 @@
             }
         }
 
-        // Function to create complete workflow on canvas
-        async function createOnboardingWorkflow(data) {
-            const startX = 0;
-            const startY = 0;
-            const horizontalSpacing = 700;
-            const elements = [];
+        // Function to create project template on canvas
+        async function createProjectTemplate(data) {
+            const startX = -200;
+            const startY = -400;
+            const cardWidth = 1400;
+            const cardHeight = 800;
 
-            // Add project title
-            await miro.board.createText({
-                content: `<b>${data.projectName.toUpperCase()}</b>`,
+            // Create vertical sidebar with project name
+            const sidebar = await miro.board.createShape({
+                content: `<p style="text-align:center; writing-mode: vertical-rl; transform: rotate(180deg);"><b style="font-size:48px; letter-spacing: 8px;">${data.projectName.toUpperCase()}</b></p>`,
+                shape: 'rectangle',
                 style: {
-                    color: '#050038',
-                    fontSize: 32,
+                    fillColor: '#1a1a1a',
+                    borderWidth: 0,
+                    fontFamily: 'arial',
+                    color: '#ffffff',
+                    fontSize: 48,
                     textAlign: 'center'
                 },
-                x: startX + (horizontalSpacing * 3),
-                y: startY - 250,
-                width: 800
+                x: startX - 250,
+                y: startY + 400,
+                width: 200,
+                height: 1200
             });
 
-            // 1. Client sends project (Start)
-            const start = await miro.board.createShape({
-                content: `<p style="text-align:center"><b style="font-size:18px">🎯 PROJECT STARTED</b></p><br><b>Client:</b> ${data.client}<br><b>Project:</b> ${data.projectName}${data.deadline ? '<br><b>Deadline:</b> ' + new Date(data.deadline).toLocaleDateString('en-US') : ''}`,
-                shape: 'round_rectangle',
+            // Main template card with all information
+            const templateContent = `
+                <div style="padding: 40px; line-height: 1.6;">
+                    <h1 style="font-size: 36px; margin-bottom: 30px; border-bottom: 4px solid #000; padding-bottom: 15px;">${data.projectName}</h1>
+                    
+                    <div style="margin-bottom: 30px;">
+                        <h2 style="font-size: 18px; font-weight: bold; margin-bottom: 10px; color: #000;">PROJECT OVERVIEW / DESCRIPTION</h2>
+                        <p style="font-size: 14px;">${data.projectDescription}</p>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
+                        <div>
+                            <h2 style="font-size: 18px; font-weight: bold; margin-bottom: 10px; color: #000;">TARGET AUDIENCE</h2>
+                            <p style="font-size: 14px;">${data.targetAudience}</p>
+                        </div>
+                        
+                        <div>
+                            <h2 style="font-size: 18px; font-weight: bold; margin-bottom: 10px; color: #000;">GOALS / OBJECTIVES</h2>
+                            <p style="font-size: 14px;">${data.objectives}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const mainCard = await miro.board.createShape({
+                content: templateContent,
+                shape: 'rectangle',
                 style: {
-                    fillColor: '#e6f3ff',
-                    borderColor: '#4262ff',
+                    fillColor: '#ffffff',
+                    borderColor: '#000000',
                     borderWidth: 3,
                     fontFamily: 'arial',
                     fontSize: 14
                 },
-                x: startX,
+                x: startX + cardWidth / 2,
                 y: startY,
-                width: 600,
-                height: 300
+                width: cardWidth,
+                height: cardHeight
             });
-            elements.push(start);
 
-            // 2. Briefing
-            const briefingContent = `<p style="text-align:center"><b style="font-size:18px">💡 BRIEFING</b></p><br><b>Objectives:</b><br>${data.objectives}<br><br>${data.targetAudience ? '<b>Target Audience:</b> ' + data.targetAudience + '<br><br>' : ''}${data.references ? '<b>References:</b><br>' + data.references : ''}`;
-            const briefing = await miro.board.createShape({
-                content: briefingContent,
-                shape: 'round_rectangle',
+            // Messaging & Deliverables Card
+            const deliverablesContent = `
+                <div style="padding: 30px;">
+                    <h2 style="font-size: 20px; font-weight: bold; margin-bottom: 15px; color: #000;">FINAL MESSAGING / COPY</h2>
+                    <p style="font-size: 14px; margin-bottom: 25px;">${data.messaging || 'To be defined'}</p>
+                    
+                    <h2 style="font-size: 20px; font-weight: bold; margin-bottom: 15px; color: #000;">DELIVERABLES</h2>
+                    <ul style="font-size: 14px; line-height: 1.8; list-style-position: inside;">
+                        <li><b>File type(s):</b> ${data.fileTypes}</li>
+                        <li><b>File sizes / dimensions:</b> ${data.fileSizes}</li>
+                        <li><b>Number of assets:</b> ${data.numberOfAssets}</li>
+                    </ul>
+                    
+                    <h2 style="font-size: 20px; font-weight: bold; margin: 20px 0 15px; color: #000;">TIMELINE / KEY MILESTONES</h2>
+                    <ul style="font-size: 14px; line-height: 1.8; list-style-position: inside;">
+                        ${data.draftDue ? '<li><b>Draft due:</b> ' + new Date(data.draftDue).toLocaleDateString('en-US') + '</li>' : ''}
+                        ${data.reviewDue ? '<li><b>Review:</b> ' + new Date(data.reviewDue).toLocaleDateString('en-US') + '</li>' : ''}
+                        ${data.finalDelivery ? '<li><b>Final delivery:</b> ' + new Date(data.finalDelivery).toLocaleDateString('en-US') + '</li>' : ''}
+                    </ul>
+                    
+                    ${data.resourceLinks ? '<h2 style="font-size: 20px; font-weight: bold; margin: 20px 0 15px; color: #000;">RESOURCE LINKS / ASSETS</h2><p style="font-size: 14px;">' + data.resourceLinks + '</p>' : ''}
+                    
+                    ${data.additionalNotes ? '<h2 style="font-size: 20px; font-weight: bold; margin: 20px 0 15px; color: #000;">ADDITIONAL NOTES / SPECIAL REQUIREMENTS</h2><p style="font-size: 14px;">' + data.additionalNotes + '</p>' : ''}
+                </div>
+            `;
+
+            const deliverablesCard = await miro.board.createShape({
+                content: deliverablesContent,
+                shape: 'rectangle',
                 style: {
-                    fillColor: '#fff9b1',
-                    borderColor: '#f5d128',
-                    borderWidth: 2,
+                    fillColor: '#ffffff',
+                    borderColor: '#000000',
+                    borderWidth: 3,
                     fontFamily: 'arial',
                     fontSize: 14
                 },
-                x: startX + horizontalSpacing * 1,
-                y: startY,
-                width: 600,
-                height: 300
+                x: startX + cardWidth / 2,
+                y: startY + cardHeight + 100,
+                width: cardWidth,
+                height: 700
             });
-            elements.push(briefing);
 
-            // Upload inspiration images below briefing if any
+            // Inspirations & Style Card
+            const inspirationsContent = `
+                <div style="padding: 30px;">
+                    <h2 style="font-size: 20px; font-weight: bold; margin-bottom: 15px; color: #000;">INSPIRATIONS / REFERENCES</h2>
+                    <p style="font-size: 14px; margin-bottom: 20px;">${data.references || 'Links, screenshots, mood boards, examples of work you like or want to emulate'}</p>
+                    
+                    ${data.designNotes ? '<h2 style="font-size: 20px; font-weight: bold; margin-bottom: 15px; color: #000;">STYLE / DESIGN NOTES</h2><p style="font-size: 14px;">' + data.designNotes + '</p>' : ''}
+                </div>
+            `;
+
+            const inspirationsCard = await miro.board.createShape({
+                content: inspirationsContent,
+                shape: 'rectangle',
+                style: {
+                    fillColor: '#ffffff',
+                    borderColor: '#000000',
+                    borderWidth: 3,
+                    fontFamily: 'arial',
+                    fontSize: 14
+                },
+                x: startX + cardWidth + 600,
+                y: startY,
+                width: 900,
+                height: 500
+            });
+
+            // Upload inspiration images in a grid
             if (uploadedFiles.length > 0) {
-                let imageX = startX + horizontalSpacing * 1 - 250;
-                const imageY = startY + 200;
-                
-                for (let i = 0; i < Math.min(uploadedFiles.length, 3); i++) {
+                const imagesPerRow = 3;
+                const imageSize = 250;
+                const imageGap = 20;
+                const gridStartX = startX + cardWidth + 600 - 400;
+                const gridStartY = startY + 300;
+
+                for (let i = 0; i < uploadedFiles.length; i++) {
+                    const row = Math.floor(i / imagesPerRow);
+                    const col = i % imagesPerRow;
+                    const imageX = gridStartX + (col * (imageSize + imageGap));
+                    const imageY = gridStartY + (row * (imageSize + imageGap));
+
                     try {
                         await miro.board.createImage({
                             url: uploadedFiles[i].data,
                             x: imageX,
                             y: imageY,
-                            width: 150
+                            width: imageSize
                         });
-                        imageX += 180;
                     } catch (error) {
                         console.error('Error uploading image:', error);
                     }
                 }
             }
 
-            // 3. Direction
-            const direction = await miro.board.createShape({
-                content: `<p style="text-align:center"><b style="font-size:18px">🎨 DIRECTION</b></p><br>${data.creativeDirection || 'Awaiting creative and strategic direction definition'}`,
-                shape: 'round_rectangle',
-                style: {
-                    fillColor: '#ffd580',
-                    borderColor: '#ff9500',
-                    borderWidth: 2,
-                    fontFamily: 'arial',
-                    fontSize: 14
-                },
-                x: startX + horizontalSpacing * 2,
-                y: startY,
-                width: 600,
-                height: 300
-            });
-            elements.push(direction);
-
-            // 4. Deliverables
-            const deliverables = await miro.board.createShape({
-                content: `<p style="text-align:center"><b style="font-size:18px">📦 DELIVERABLES</b></p><br><b>Items to produce:</b><br>${data.deliverables}`,
-                shape: 'round_rectangle',
-                style: {
-                    fillColor: '#d5f692',
-                    borderColor: '#7ed321',
-                    borderWidth: 2,
-                    fontFamily: 'arial',
-                    fontSize: 14
-                },
-                x: startX + horizontalSpacing * 3,
-                y: startY,
-                width: 600,
-                height: 300
-            });
-            elements.push(deliverables);
-
-            // 5. Revisions
-            const revisions = await miro.board.createShape({
-                content: `<p style="text-align:center"><b style="font-size:18px">🔄 REVISIONS</b></p><br><b>Revision rounds:</b> ${data.revisionRounds}<br><br>• Feedback check<br>• Necessary adjustments<br>• Client approval`,
-                shape: 'round_rectangle',
-                style: {
-                    fillColor: '#ffc0cb',
-                    borderColor: '#ff69b4',
-                    borderWidth: 2,
-                    fontFamily: 'arial',
-                    fontSize: 14
-                },
-                x: startX + horizontalSpacing * 4,
-                y: startY,
-                width: 600,
-                height: 300
-            });
-            elements.push(revisions);
-
-            // 6. Finals
-            const finals = await miro.board.createShape({
-                content: `<p style="text-align:center"><b style="font-size:18px">✅ FINALS</b></p><br>Final deliverables approved and ready for publication/delivery`,
-                shape: 'round_rectangle',
-                style: {
-                    fillColor: '#b5e7a0',
-                    borderColor: '#7ed321',
-                    borderWidth: 2,
-                    fontFamily: 'arial',
-                    fontSize: 14
-                },
-                x: startX + horizontalSpacing * 5,
-                y: startY,
-                width: 600,
-                height: 300
-            });
-            elements.push(finals);
-
-            // 7. KPI
-            const kpi = await miro.board.createShape({
-                content: `<p style="text-align:center"><b style="font-size:18px">📊 KPI</b></p><br>${data.metrics ? '<b>Success metrics:</b><br>' + data.metrics : 'Define project success metrics'}`,
-                shape: 'round_rectangle',
-                style: {
-                    fillColor: '#dfc0eb',
-                    borderColor: '#9b59b6',
-                    borderWidth: 2,
-                    fontFamily: 'arial',
-                    fontSize: 14
-                },
-                x: startX + horizontalSpacing * 6,
-                y: startY,
-                width: 600,
-                height: 300
-            });
-            elements.push(kpi);
-
-            // 8. Project Completed
-            const completion = await miro.board.createShape({
-                content: `<p style="text-align:center"><b style="font-size:20px">🎉 PROJECT COMPLETED</b></p><br><p style="text-align:center">Success!</p>`,
-                shape: 'round_rectangle',
-                style: {
-                    fillColor: '#c7f5d9',
-                    borderColor: '#00c875',
-                    borderWidth: 3,
-                    fontFamily: 'arial',
-                    fontSize: 16
-                },
-                x: startX + horizontalSpacing * 7,
-                y: startY,
-                width: 600,
-                height: 300
-            });
-            elements.push(completion);
-
-            // Create connectors (arrows) between elements
-            for (let i = 0; i < elements.length - 1; i++) {
-                await miro.board.createConnector({
-                    start: {
-                        item: elements[i].id,
-                        position: { x: 1, y: 0.5 }
-                    },
-                    end: {
-                        item: elements[i + 1].id,
-                        position: { x: 0, y: 0.5 }
-                    },
-                    style: {
-                        strokeColor: '#4262ff',
-                        strokeWidth: 4,
-                        endStrokeCap: 'stealth'
-                    }
+            // Create sticky notes for key info
+            const stickyNotes = [];
+            
+            if (data.client) {
+                stickyNotes.push({
+                    content: `<b>CLIENT</b><br>${data.client}`,
+                    color: 'light_yellow',
+                    x: startX + cardWidth + 600,
+                    y: startY + 700
                 });
             }
 
-            // Center view on created workflow
-            await miro.board.viewport.zoomTo(elements);
+            if (data.deadline) {
+                stickyNotes.push({
+                    content: `<b>DEADLINE</b><br>${new Date(data.deadline).toLocaleDateString('en-US')}`,
+                    color: 'light_pink',
+                    x: startX + cardWidth + 800,
+                    y: startY + 700
+                });
+            }
+
+            for (const note of stickyNotes) {
+                await miro.board.createStickyNote({
+                    content: note.content,
+                    style: {
+                        fillColor: note.color
+                    },
+                    x: note.x,
+                    y: note.y,
+                    width: 150
+                });
+            }
+
+            // Zoom to all created elements
+            await miro.board.viewport.zoomTo([sidebar, mainCard, deliverablesCard, inspirationsCard]);
 
             return true;
         }
 
         // Form handler
-        document.getElementById('onboardingForm').addEventListener('submit', async (e) => {
+        document.getElementById('briefForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const form = document.getElementById('onboardingForm');
+            const form = document.getElementById('briefForm');
             const submitBtn = document.getElementById('submitBtn');
             const successMsg = document.getElementById('successMsg');
             const errorMsg = document.getElementById('errorMsg');
@@ -632,19 +707,26 @@
 
             const data = {
                 projectName: document.getElementById('projectName').value,
+                projectDescription: document.getElementById('projectDescription').value,
                 client: document.getElementById('client').value,
                 deadline: document.getElementById('deadline').value,
-                objectives: document.getElementById('objectives').value,
                 targetAudience: document.getElementById('targetAudience').value,
+                objectives: document.getElementById('objectives').value,
+                messaging: document.getElementById('messaging').value,
+                fileTypes: document.getElementById('fileTypes').value,
+                fileSizes: document.getElementById('fileSizes').value,
+                numberOfAssets: document.getElementById('numberOfAssets').value,
+                draftDue: document.getElementById('draftDue').value,
+                reviewDue: document.getElementById('reviewDue').value,
+                finalDelivery: document.getElementById('finalDelivery').value,
+                resourceLinks: document.getElementById('resourceLinks').value,
                 references: document.getElementById('references').value,
-                creativeDirection: document.getElementById('creativeDirection').value,
-                deliverables: document.getElementById('deliverables').value,
-                revisionRounds: document.getElementById('revisionRounds').value,
-                metrics: document.getElementById('metrics').value
+                designNotes: document.getElementById('designNotes').value,
+                additionalNotes: document.getElementById('additionalNotes').value
             };
 
             try {
-                await createOnboardingWorkflow(data);
+                await createProjectTemplate(data);
                 loading.style.display = 'none';
                 successMsg.style.display = 'block';
                 
@@ -658,7 +740,7 @@
                     successMsg.style.display = 'none';
                 }, 3000);
             } catch (error) {
-                console.error('Error creating workflow:', error);
+                console.error('Error creating template:', error);
                 loading.style.display = 'none';
                 form.style.display = 'block';
                 errorMsg.style.display = 'block';
