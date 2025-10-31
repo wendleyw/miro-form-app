@@ -345,9 +345,14 @@
             <div class="app-icon">📊</div>
             <div class="header-title">Project Tracker</div>
         </div>
-        <button class="btn btn-primary" onclick="createOnMiro()">
-            🚀 Create on Miro Board
-        </button>
+        <div style="display: flex; gap: 8px;">
+            <button class="btn btn-primary" onclick="createOnMiro()">
+                🚀 Create on Miro Board
+            </button>
+            <button class="btn" onclick="closeModalWindow()" style="background: #f0f0f0;">
+                ✕ Close
+            </button>
+        </div>
     </div>
 
     <div class="toolbar">
@@ -777,11 +782,20 @@
         // Initialize Miro SDK
         if (typeof miro !== 'undefined') {
             miro.board.ui.on('icon:click', async () => {
-                await miro.board.ui.openPanel({
+                await miro.board.ui.openModal({
                     url: window.location.href,
-                    width: 1200  // Painel lateral mais largo
+                    width: 1400,
+                    height: 900,
+                    fullscreen: false
                 });
             });
+        }
+        
+        // Botão para fechar modal
+        function closeModalWindow() {
+            if (typeof miro !== 'undefined') {
+                miro.board.ui.closeModal();
+            }
         }
     </script>
 </body>
