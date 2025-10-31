@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Project Tracker - Miro App (Corrigido)</title>
+    <title>Project Tracker - Miro App</title>
     <script src="https://miro.com/app/static/sdk/v2/miro.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -46,8 +46,6 @@
         .editable:hover { background:#f0f0f0; }
         input[type="date"], input[type="text"], select { border:none; background:transparent; font-family:inherit; font-size:inherit; color:inherit; width:100%; cursor:pointer; padding:4px; }
         input:focus, select:focus { outline:2px solid #667eea; border-radius:4px; background:white; }
-        .add-row { padding:12px 20px; color:#666; cursor:pointer; display:flex; align-items:center; gap:8px; border-top:1px solid #e0e0e0; transition:background .2s; }
-        .add-row:hover { background:#f8f9fa; }
         .modal { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,.5); z-index:1000; align-items:center; justify-content:center; }
         .modal.show { display:flex; }
         .modal-content { background:white; border-radius:12px; padding:24px; width:90%; max-width:500px; max-height:80vh; overflow-y:auto; }
@@ -105,7 +103,6 @@
         </table>
     </div>
 
-    <!-- Add/Edit Modal -->
     <div id="projectModal" class="modal" aria-hidden="true">
         <div class="modal-content">
             <div class="modal-header">Add New Project</div>
@@ -163,7 +160,6 @@
     </div>
 
     <script>
-        // --- Dados iniciais ---
         let projects = [
             { id:1, title:'Product Brief', icon:'📄', team:'Design Team', manager:'John Doe', startDate:'2025-03-30', endDate:'2025-04-17', phase:'Discover', status:'In Progress', health:'R', progress:45, budget:'$10,000', resources:'Brief template, Research docs' },
             { id:2, title:'Research', icon:'🔍', team:'Research Team', manager:'Jane Smith', startDate:'2025-04-07', endDate:'2025-04-23', phase:'Discover', status:'Planning', health:'Y', progress:20, budget:'$5,000', resources:'Survey tools' },
@@ -174,7 +170,6 @@
         ];
         let collapsedPhases = {};
 
-        // --- Render da tabela ---
         function renderTable() {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
@@ -297,80 +292,51 @@
             input.addEventListener('keypress', function(e) { if (e.key === 'Enter') this.blur(); });
         }
 
-        // --- createOnMiro corrigido (usa widgets.create) ---
+        // SDK V2 - Função corrigida para criar items no board
         async function createOnMiro() {
             try {
-                if (typeof miro === 'undefined' || !miro.board || !miro.board.widgets) {
-                    throw new Error('Miro SDK não disponível ou sem permissão para widgets. Verifique se o app está instalado e se possui scopes adequadas.');
-                }
-
-                // opcional: solicitar autorização se falta
-                if (miro.isAuthorized && !await miro.isAuthorized()) {
-                    await miro.requestAuthorization();
-                }
-
-                const cardWidth = 600;
-                const cardHeight = 300;
+                const cardWidth = 300;
+                const cardHeight = 200;
                 const gap = 50;
                 let xPos = 0;
                 let yPos = 0;
 
+                const phaseColors = { 
+                    Discover: '#ffc700', 
+                    Define: '#4caf50', 
+                    Deliver: '#2196f3' 
+                };
+
                 for (const project of projects) {
-                    const phaseColors = { Discover: '#F57F17', Define: '#2E7D32', Deliver: '#1565C0' };
-                    await miro.board.widgets.create({
-                        type: 'shape',
+                    // SDK v2 usa miro.board.createCard ou createStickyNote
+                    await miro.board.createCard({
+                        title: `${project.icon} ${project.title}`,
+                        description: `Phase: ${project.phase}\nTeam: ${project.team}\nManager: ${project.manager}\nStatus: ${project.status}\nHealth: ${project.health}\nProgress: ${project.progress}%\nDates: ${project.startDate} → ${project.endDate}\nBudget: ${project.budget}`,
                         x: xPos,
                         y: yPos,
-                        width: cardWidth,
-                        height: cardHeight,
                         style: {
-                            fillColor: '#ffffff',
-                            borderColor: phaseColors[project.phase] || '#000000',
-                            borderWidth: 4
-                        },
-                        // texto simples (não HTML) com quebras de linha
-                        text:
-                          `${project.icon} ${project.title}\n\n` +
-                          `Phase: ${project.phase}\n` +
-                          `Team: ${project.team}\n` +
-                          `Manager: ${project.manager}\n` +
-                          `Status: ${project.status}\n` +
-                          `Health: ${project.health}\n` +
-                          `Progress: ${project.progress}%\n` +
-                          `Dates: ${project.startDate} → ${project.endDate}\n` +
-                          `Budget: ${project.budget}`
+                            cardTheme: phaseColors[project.phase] || '#ffc700'
+                        }
                     });
 
                     xPos += cardWidth + gap;
                     if (xPos > 2400) { xPos = 0; yPos += cardHeight + gap; }
                 }
 
-                alert('✅ Projects created on Miro Board!');
+                await miro.board.notifications.showInfo('✅ Projects created on Miro Board!');
             } catch (err) {
                 console.error('Error creating on Miro:', err);
-                alert('Erro ao criar no Miro. Verifique console e se o app está instalado com as permissões necessárias (widgets write / boards write).');
+                await miro.board.notifications.showError('Error creating projects. Check console for details.');
             }
         }
 
-        // fechar modal do Miro (quando aberto dentro do Miro)
-        function closeModalWindow() {
-            if (typeof miro !== 'undefined' && miro.board && miro.board.ui && miro.board.ui.closeModal) {
-                miro.board.ui.closeModal();
-            } else {
-                // fallback: apenas fecha o modal local
+        async function closeModalWindow() {
+            try {
+                await miro.board.ui.closeModal();
+            } catch (e) {
                 closeModal();
             }
         }
-
-        // --- Inicialização e binding de eventos ---
-        document.getElementById('addProjectBtn').addEventListener('click', showAddModal);
-        document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
-        document.getElementById('saveProjectBtn').addEventListener('click', saveProject);
-        document.getElementById('createOnMiroBtn').addEventListener('click', createOnMiro);
-        document.getElementById('closeModalBtn').addEventListener('click', closeModalWindow);
-        document.getElementById('expandAllBtn').addEventListener('click', expandAll);
-        document.getElementById('collapseAllBtn').addEventListener('click', collapseAll);
-        document.getElementById('exportBtn').addEventListener('click', exportData);
 
         function exportData() {
             const csv = [
@@ -386,38 +352,26 @@
             URL.revokeObjectURL(url);
         }
 
-        // render inicial
+        // Event listeners
+        document.getElementById('addProjectBtn').addEventListener('click', showAddModal);
+        document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
+        document.getElementById('saveProjectBtn').addEventListener('click', saveProject);
+        document.getElementById('createOnMiroBtn').addEventListener('click', createOnMiro);
+        document.getElementById('closeModalBtn').addEventListener('click', closeModalWindow);
+        document.getElementById('expandAllBtn').addEventListener('click', expandAll);
+        document.getElementById('collapseAllBtn').addEventListener('click', collapseAll);
+        document.getElementById('exportBtn').addEventListener('click', exportData);
+
+        // Render inicial
         renderTable();
 
-        // --- Miro SDK onReady (safe init) ---
-        if (typeof miro !== 'undefined') {
-            miro.onReady(() => {
-                // quando o ícone do app for clicado no board, abre modal apontando para esta mesma página com ?modal=true
-                if (miro.board && miro.board.ui && miro.board.ui.openModal) {
-                    miro.board.ui.on('icon:click', async () => {
-                        // use uma URL específica se preferir (ex: /modal.html)
-                        const modalUrl = window.location.origin + window.location.pathname + '?modal=true';
-                        try {
-                            await miro.board.ui.openModal({
-                                url: modalUrl,
-                                width: 1000,
-                                height: 700,
-                                fullscreen: false
-                            });
-                        } catch (err) {
-                            console.error('Erro ao abrir modal do Miro:', err);
-                        }
-                    });
-                }
+        // Inicialização do SDK v2
+        miro.board.ui.on('icon:click', async () => {
+            await miro.board.ui.openPanel({
+                url: window.location.href,
+                height: 700
             });
-        }
-
-        // Se a página for aberta como modal (ex: ?modal=true), você pode detectar e adaptar comportamento
-        if (window.location.search.includes('modal=true')) {
-            // Ex.: esconder rodapé, ajustar estilo, etc. (opcional)
-            // No Miro, o conteúdo será renderizado dentro do iframe do modal.
-            console.log('Aberto como modal (modal=true)');
-        }
+        });
     </script>
 </body>
 </html>
