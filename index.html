@@ -1,17 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Project Tracker - Miro App</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Project Tracker - Miro App (Corrigido)</title>
     <script src="https://miro.com/app/static/sdk/v2/miro.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #f5f5f5;
@@ -21,322 +16,50 @@
             display: flex;
             flex-direction: column;
         }
-
-        .header {
-            background: white;
-            border-bottom: 1px solid #e0e0e0;
-            padding: 16px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-shrink: 0;
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .app-icon {
-            width: 32px;
-            height: 32px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-        }
-
-        .header-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: #333;
-        }
-
-        .toolbar {
-            background: #fafafa;
-            border-bottom: 1px solid #e0e0e0;
-            padding: 12px 20px;
-            display: flex;
-            gap: 8px;
-            flex-shrink: 0;
-        }
-
-        .btn {
-            padding: 8px 16px;
-            border: 1px solid #ddd;
-            background: white;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s;
-        }
-
-        .btn:hover {
-            background: #f0f0f0;
-            border-color: #999;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
-        }
-
-        .table-container {
-            flex: 1;
-            overflow: auto;
-            background: white;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 1200px;
-        }
-
-        thead {
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            background: #fafafa;
-        }
-
-        th {
-            padding: 12px 16px;
-            text-align: left;
-            font-weight: 600;
-            color: #666;
-            font-size: 11px;
-            text-transform: uppercase;
-            border-bottom: 2px solid #e0e0e0;
-            white-space: nowrap;
-            background: #fafafa;
-        }
-
-        td {
-            padding: 12px 16px;
-            border-bottom: 1px solid #f0f0f0;
-            color: #333;
-        }
-
-        tbody tr {
-            transition: background 0.2s;
-            cursor: pointer;
-        }
-
-        tbody tr:hover {
-            background: #f8f9fa;
-        }
-
-        .phase-group-header {
-            background: #f5f5f5;
-            font-weight: 600;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .phase-group-header td {
-            padding: 8px 16px;
-            border-bottom: 2px solid #e0e0e0;
-        }
-
-        .phase-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .phase-discover { background: #FFF9C4; color: #F57F17; }
-        .phase-define { background: #C8E6C9; color: #2E7D32; }
-        .phase-deliver { background: #BBDEFB; color: #1565C0; }
-
-        .status-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 10px;
-            font-size: 11px;
-            font-weight: 600;
-        }
-
-        .status-not-started { background: #E0E0E0; color: #666; }
-        .status-planning { background: #BBDEFB; color: #1565C0; }
-        .status-in-progress { background: #C8E6C9; color: #2E7D32; }
-        .status-completed { background: #B2DFDB; color: #00695C; }
-        .status-on-hold { background: #FFCDD2; color: #C62828; }
-
-        .health-indicator {
-            width: 28px;
-            height: 28px;
-            border-radius: 6px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 12px;
-        }
-
-        .health-g { background: #C8E6C9; color: #2E7D32; }
-        .health-y { background: #FFF9C4; color: #F57F17; }
-        .health-r { background: #FFCDD2; color: #C62828; }
-
-        .task-icon {
-            margin-right: 8px;
-        }
-
-        .editable {
-            cursor: text;
-            padding: 8px;
-            border-radius: 4px;
-            transition: background 0.2s;
-        }
-
-        .editable:hover {
-            background: #f0f0f0;
-        }
-
-        input[type="date"],
-        input[type="text"],
-        select {
-            border: none;
-            background: transparent;
-            font-family: inherit;
-            font-size: inherit;
-            color: inherit;
-            width: 100%;
-            cursor: pointer;
-            padding: 4px;
-        }
-
-        input[type="date"]:focus,
-        input[type="text"]:focus,
-        select:focus {
-            outline: 2px solid #667eea;
-            border-radius: 4px;
-            background: white;
-        }
-
-        .checkbox {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-        }
-
-        .add-row {
-            padding: 12px 20px;
-            color: #666;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            border-top: 1px solid #e0e0e0;
-            transition: background 0.2s;
-        }
-
-        .add-row:hover {
-            background: #f8f9fa;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal.show {
-            display: flex;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            width: 90%;
-            max-width: 500px;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        .modal-header {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 20px;
-        }
-
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        .form-group label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 6px;
-            font-size: 12px;
-            color: #666;
-        }
-
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #e0e0e0;
-            border-radius: 6px;
-            font-size: 13px;
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 8px;
-            justify-content: flex-end;
-            margin-top: 20px;
-        }
-
-        .progress-bar {
-            height: 8px;
-            background: #e0e0e0;
-            border-radius: 4px;
-            overflow: hidden;
-            margin-top: 4px;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-            transition: width 0.3s;
-        }
-
-        .delete-btn {
-            color: #C62828;
-            cursor: pointer;
-            padding: 4px 8px;
-            border-radius: 4px;
-            transition: background 0.2s;
-        }
-
-        .delete-btn:hover {
-            background: #FFCDD2;
-        }
+        .header { background: white; border-bottom: 1px solid #e0e0e0; padding: 16px 20px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+        .header-left { display:flex; align-items:center; gap:12px; }
+        .app-icon { width:32px; height:32px; background: linear-gradient(135deg,#667eea 0%,#764ba2 100%); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px;}
+        .header-title { font-size:16px; font-weight:600; color:#333; }
+        .toolbar { background:#fafafa; border-bottom:1px solid #e0e0e0; padding:12px 20px; display:flex; gap:8px; flex-shrink:0; }
+        .btn { padding:8px 16px; border:1px solid #ddd; background:white; border-radius:6px; cursor:pointer; font-size:12px; display:flex; align-items:center; gap:6px; transition:all .2s; }
+        .btn:hover { background:#f0f0f0; border-color:#999; }
+        .btn-primary { background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:white; border:none; }
+        .btn-primary:hover { transform:translateY(-1px); box-shadow:0 4px 8px rgba(102,126,234,0.3); }
+        .table-container { flex:1; overflow:auto; background:white; }
+        table { width:100%; border-collapse:collapse; min-width:1200px; }
+        thead { position:sticky; top:0; z-index:10; background:#fafafa; }
+        th { padding:12px 16px; text-align:left; font-weight:600; color:#666; font-size:11px; text-transform:uppercase; border-bottom:2px solid #e0e0e0; white-space:nowrap; background:#fafafa; }
+        td { padding:12px 16px; border-bottom:1px solid #f0f0f0; color:#333; }
+        tbody tr { transition:background .2s; cursor:pointer; }
+        tbody tr:hover { background:#f8f9fa; }
+        .phase-group-header { background:#f5f5f5; font-weight:600; cursor:pointer; user-select:none; }
+        .phase-badge { display:inline-block; padding:4px 12px; border-radius:12px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; }
+        .phase-discover { background:#FFF9C4; color:#F57F17; }
+        .phase-define { background:#C8E6C9; color:#2E7D32; }
+        .phase-deliver { background:#BBDEFB; color:#1565C0; }
+        .status-badge { display:inline-block; padding:4px 10px; border-radius:10px; font-size:11px; font-weight:600; }
+        .health-indicator { width:28px; height:28px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center; font-weight:700; font-size:12px; }
+        .health-g { background:#C8E6C9; color:#2E7D32; }
+        .health-y { background:#FFF9C4; color:#F57F17; }
+        .health-r { background:#FFCDD2; color:#C62828; }
+        .editable { cursor:text; padding:8px; border-radius:4px; transition:background .2s; }
+        .editable:hover { background:#f0f0f0; }
+        input[type="date"], input[type="text"], select { border:none; background:transparent; font-family:inherit; font-size:inherit; color:inherit; width:100%; cursor:pointer; padding:4px; }
+        input:focus, select:focus { outline:2px solid #667eea; border-radius:4px; background:white; }
+        .add-row { padding:12px 20px; color:#666; cursor:pointer; display:flex; align-items:center; gap:8px; border-top:1px solid #e0e0e0; transition:background .2s; }
+        .add-row:hover { background:#f8f9fa; }
+        .modal { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,.5); z-index:1000; align-items:center; justify-content:center; }
+        .modal.show { display:flex; }
+        .modal-content { background:white; border-radius:12px; padding:24px; width:90%; max-width:500px; max-height:80vh; overflow-y:auto; }
+        .modal-header { font-size:18px; font-weight:600; margin-bottom:20px; }
+        .form-group { margin-bottom:16px; }
+        .form-group label { display:block; font-weight:600; margin-bottom:6px; font-size:12px; color:#666; }
+        .form-group input, .form-group select { width:100%; padding:10px; border:2px solid #e0e0e0; border-radius:6px; font-size:13px; }
+        .modal-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:20px; }
+        .progress-bar { height:8px; background:#e0e0e0; border-radius:4px; overflow:hidden; margin-top:4px; }
+        .progress-fill { height:100%; background:linear-gradient(90deg,#667eea 0%,#764ba2 100%); transition:width .3s; }
+        .delete-btn { color:#C62828; cursor:pointer; padding:4px 8px; border-radius:4px; transition:background .2s; }
+        .delete-btn:hover { background:#FFCDD2; }
     </style>
 </head>
 <body>
@@ -345,29 +68,17 @@
             <div class="app-icon">📊</div>
             <div class="header-title">Project Tracker</div>
         </div>
-        <div style="display: flex; gap: 8px;">
-            <button class="btn btn-primary" onclick="createOnMiro()">
-                🚀 Create on Miro Board
-            </button>
-            <button class="btn" onclick="closeModalWindow()" style="background: #f0f0f0;">
-                ✕ Close
-            </button>
+        <div style="display:flex; gap:8px;">
+            <button class="btn btn-primary" id="createOnMiroBtn">🚀 Create on Miro Board</button>
+            <button class="btn" id="closeModalBtn" style="background:#f0f0f0;">✕ Close</button>
         </div>
     </div>
 
     <div class="toolbar">
-        <button class="btn" onclick="showAddModal()">
-            ➕ Add Project
-        </button>
-        <button class="btn" onclick="expandAll()">
-            📂 Expand All
-        </button>
-        <button class="btn" onclick="collapseAll()">
-            📁 Collapse All
-        </button>
-        <button class="btn" onclick="exportData()">
-            📤 Export
-        </button>
+        <button class="btn" id="addProjectBtn">➕ Add Project</button>
+        <button class="btn" id="expandAllBtn">📂 Expand All</button>
+        <button class="btn" id="collapseAllBtn">📁 Collapse All</button>
+        <button class="btn" id="exportBtn">📤 Export</button>
     </div>
 
     <div class="table-container">
@@ -390,13 +101,12 @@
                     <th style="width: 60px;">Actions</th>
                 </tr>
             </thead>
-            <tbody id="tableBody">
-            </tbody>
+            <tbody id="tableBody"></tbody>
         </table>
     </div>
 
     <!-- Add/Edit Modal -->
-    <div id="projectModal" class="modal">
+    <div id="projectModal" class="modal" aria-hidden="true">
         <div class="modal-content">
             <div class="modal-header">Add New Project</div>
             <div class="form-group">
@@ -446,173 +156,72 @@
                 </select>
             </div>
             <div class="modal-actions">
-                <button class="btn" onclick="closeModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="saveProject()">Save Project</button>
+                <button class="btn" id="cancelModalBtn">Cancel</button>
+                <button class="btn btn-primary" id="saveProjectBtn">Save Project</button>
             </div>
         </div>
     </div>
 
     <script>
+        // --- Dados iniciais ---
         let projects = [
-            {
-                id: 1,
-                title: 'Product Brief',
-                icon: '📄',
-                team: 'Design Team',
-                manager: 'John Doe',
-                startDate: '2025-03-30',
-                endDate: '2025-04-17',
-                phase: 'Discover',
-                status: 'In Progress',
-                health: 'R',
-                progress: 45,
-                budget: '$10,000',
-                resources: 'Brief template, Research docs'
-            },
-            {
-                id: 2,
-                title: 'Research',
-                icon: '🔍',
-                team: 'Research Team',
-                manager: 'Jane Smith',
-                startDate: '2025-04-07',
-                endDate: '2025-04-23',
-                phase: 'Discover',
-                status: 'Planning',
-                health: 'Y',
-                progress: 20,
-                budget: '$5,000',
-                resources: 'Survey tools'
-            },
-            {
-                id: 3,
-                title: 'User Journey Diagrams',
-                icon: '🗺️',
-                team: 'UX Team',
-                manager: 'Mike Johnson',
-                startDate: '2025-04-11',
-                endDate: '2025-04-29',
-                phase: 'Define',
-                status: 'In Progress',
-                health: 'G',
-                progress: 60,
-                budget: '$8,000',
-                resources: 'Miro, Figma'
-            },
-            {
-                id: 4,
-                title: 'Prototypes',
-                icon: '🎨',
-                team: 'Design Team',
-                manager: 'Sarah Lee',
-                startDate: '2025-04-15',
-                endDate: '2025-04-30',
-                phase: 'Define',
-                status: 'Not Started',
-                health: 'G',
-                progress: 0,
-                budget: '$12,000',
-                resources: 'Figma, Sketch'
-            },
-            {
-                id: 5,
-                title: 'Build',
-                icon: '🏗️',
-                team: 'Dev Team',
-                manager: 'Tom Brown',
-                startDate: '2025-05-01',
-                endDate: '2025-05-31',
-                phase: 'Deliver',
-                status: 'Not Started',
-                health: 'Y',
-                progress: 0,
-                budget: '$50,000',
-                resources: 'GitHub, AWS'
-            },
-            {
-                id: 6,
-                title: 'Marketing Campaign',
-                icon: '📢',
-                team: 'Marketing Team',
-                manager: 'Emma Wilson',
-                startDate: '2025-05-13',
-                endDate: '2025-05-31',
-                phase: 'Deliver',
-                status: 'Not Started',
-                health: 'G',
-                progress: 0,
-                budget: '$15,000',
-                resources: 'Social media, Email'
-            }
+            { id:1, title:'Product Brief', icon:'📄', team:'Design Team', manager:'John Doe', startDate:'2025-03-30', endDate:'2025-04-17', phase:'Discover', status:'In Progress', health:'R', progress:45, budget:'$10,000', resources:'Brief template, Research docs' },
+            { id:2, title:'Research', icon:'🔍', team:'Research Team', manager:'Jane Smith', startDate:'2025-04-07', endDate:'2025-04-23', phase:'Discover', status:'Planning', health:'Y', progress:20, budget:'$5,000', resources:'Survey tools' },
+            { id:3, title:'User Journey Diagrams', icon:'🗺️', team:'UX Team', manager:'Mike Johnson', startDate:'2025-04-11', endDate:'2025-04-29', phase:'Define', status:'In Progress', health:'G', progress:60, budget:'$8,000', resources:'Miro, Figma' },
+            { id:4, title:'Prototypes', icon:'🎨', team:'Design Team', manager:'Sarah Lee', startDate:'2025-04-15', endDate:'2025-04-30', phase:'Define', status:'Not Started', health:'G', progress:0, budget:'$12,000', resources:'Figma, Sketch' },
+            { id:5, title:'Build', icon:'🏗️', team:'Dev Team', manager:'Tom Brown', startDate:'2025-05-01', endDate:'2025-05-31', phase:'Deliver', status:'Not Started', health:'Y', progress:0, budget:'$50,000', resources:'GitHub, AWS' },
+            { id:6, title:'Marketing Campaign', icon:'📢', team:'Marketing Team', manager:'Emma Wilson', startDate:'2025-05-13', endDate:'2025-05-31', phase:'Deliver', status:'Not Started', health:'G', progress:0, budget:'$15,000', resources:'Social media, Email' }
         ];
-
         let collapsedPhases = {};
 
+        // --- Render da tabela ---
         function renderTable() {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
-
-            const phases = ['Discover', 'Define', 'Deliver'];
-            
+            const phases = ['Discover','Define','Deliver'];
             phases.forEach(phase => {
                 const phaseProjects = projects.filter(p => p.phase === phase);
                 if (phaseProjects.length === 0) return;
-
-                // Phase header row
                 const phaseRow = document.createElement('tr');
                 phaseRow.className = 'phase-group-header';
-                phaseRow.innerHTML = `
-                    <td colspan="14" onclick="togglePhase('${phase}')">
-                        <span style="margin-right: 10px;">${collapsedPhases[phase] ? '▶' : '▼'}</span>
-                        <span class="phase-badge phase-${phase.toLowerCase()}">${phase}</span>
-                        <span style="margin-left: 10px; color: #666; font-size: 12px;">
-                            ${phaseProjects.length} project${phaseProjects.length > 1 ? 's' : ''}
-                        </span>
-                    </td>
-                `;
+                phaseRow.innerHTML = `<td colspan="14" onclick="togglePhase('${phase}')">
+                    <span style="margin-right:10px;">${collapsedPhases[phase] ? '▶' : '▼'}</span>
+                    <span class="phase-badge phase-${phase.toLowerCase()}">${phase}</span>
+                    <span style="margin-left:10px; color:#666; font-size:12px;">${phaseProjects.length} project${phaseProjects.length>1?'s':''}</span>
+                </td>`;
                 tbody.appendChild(phaseRow);
-
-                // Project rows
                 if (!collapsedPhases[phase]) {
                     phaseProjects.forEach(project => {
                         const row = document.createElement('tr');
                         row.innerHTML = `
                             <td><input type="checkbox" class="checkbox"></td>
-                            <td style="color: #ccc; cursor: grab;">⋮⋮</td>
+                            <td style="color:#ccc; cursor:grab;">⋮⋮</td>
                             <td>
                                 <span class="task-icon">${project.icon}</span>
-                                <span class="editable" onclick="editCell(this, ${project.id}, 'title')">${project.title}</span>
+                                <span class="editable" onclick="editCell(this, ${project.id}, 'title')">${escapeHtml(project.title)}</span>
                             </td>
-                            <td class="editable" onclick="editCell(this, ${project.id}, 'team')">${project.team}</td>
-                            <td class="editable" onclick="editCell(this, ${project.id}, 'manager')">${project.manager}</td>
+                            <td class="editable" onclick="editCell(this, ${project.id}, 'team')">${escapeHtml(project.team)}</td>
+                            <td class="editable" onclick="editCell(this, ${project.id}, 'manager')">${escapeHtml(project.manager)}</td>
                             <td><input type="date" value="${project.startDate}" onchange="updateProject(${project.id}, 'startDate', this.value)"></td>
                             <td><input type="date" value="${project.endDate}" onchange="updateProject(${project.id}, 'endDate', this.value)"></td>
                             <td>
                                 <select onchange="updateProject(${project.id}, 'phase', this.value)">
-                                    <option value="Discover" ${project.phase === 'Discover' ? 'selected' : ''}>Discover</option>
-                                    <option value="Define" ${project.phase === 'Define' ? 'selected' : ''}>Define</option>
-                                    <option value="Deliver" ${project.phase === 'Deliver' ? 'selected' : ''}>Deliver</option>
+                                    <option value="Discover" ${project.phase==='Discover'?'selected':''}>Discover</option>
+                                    <option value="Define" ${project.phase==='Define'?'selected':''}>Define</option>
+                                    <option value="Deliver" ${project.phase==='Deliver'?'selected':''}>Deliver</option>
                                 </select>
                             </td>
+                            <td><span class="status-badge status-${project.status.toLowerCase().replace(' ','-')}">${escapeHtml(project.status)}</span></td>
+                            <td><span class="health-indicator health-${project.health.toLowerCase()}">${escapeHtml(project.health)}</span></td>
                             <td>
-                                <span class="status-badge status-${project.status.toLowerCase().replace(' ', '-')}">${project.status}</span>
-                            </td>
-                            <td>
-                                <span class="health-indicator health-${project.health.toLowerCase()}">${project.health}</span>
-                            </td>
-                            <td>
-                                <div style="min-width: 80px;">
+                                <div style="min-width:80px;">
                                     ${project.progress}%
-                                    <div class="progress-bar">
-                                        <div class="progress-fill" style="width: ${project.progress}%"></div>
-                                    </div>
+                                    <div class="progress-bar"><div class="progress-fill" style="width:${project.progress}%"></div></div>
                                 </div>
                             </td>
-                            <td class="editable" onclick="editCell(this, ${project.id}, 'budget')">${project.budget}</td>
-                            <td class="editable" onclick="editCell(this, ${project.id}, 'resources')">${project.resources}</td>
-                            <td>
-                                <span class="delete-btn" onclick="deleteProject(${project.id})">🗑️</span>
-                            </td>
+                            <td class="editable" onclick="editCell(this, ${project.id}, 'budget')">${escapeHtml(project.budget)}</td>
+                            <td class="editable" onclick="editCell(this, ${project.id}, 'resources')">${escapeHtml(project.resources)}</td>
+                            <td><span class="delete-btn" onclick="deleteProject(${project.id})">🗑️</span></td>
                         `;
                         tbody.appendChild(row);
                     });
@@ -620,51 +229,41 @@
             });
         }
 
-        function togglePhase(phase) {
-            collapsedPhases[phase] = !collapsedPhases[phase];
-            renderTable();
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
         }
 
-        function expandAll() {
-            collapsedPhases = {};
-            renderTable();
-        }
-
-        function collapseAll() {
-            collapsedPhases = { Discover: true, Define: true, Deliver: true };
-            renderTable();
-        }
-
-        function showAddModal() {
-            document.getElementById('projectModal').classList.add('show');
-        }
-
-        function closeModal() {
-            document.getElementById('projectModal').classList.remove('show');
-        }
+        function togglePhase(phase) { collapsedPhases[phase] = !collapsedPhases[phase]; renderTable(); }
+        function expandAll() { collapsedPhases = {}; renderTable(); }
+        function collapseAll() { collapsedPhases = { Discover:true, Define:true, Deliver:true }; renderTable(); }
+        function showAddModal() { document.getElementById('projectModal').classList.add('show'); document.getElementById('projectModal').setAttribute('aria-hidden','false'); }
+        function closeModal() { document.getElementById('projectModal').classList.remove('show'); document.getElementById('projectModal').setAttribute('aria-hidden','true'); }
 
         function saveProject() {
             const newProject = {
                 id: Date.now(),
-                title: document.getElementById('modalTitle').value,
+                title: document.getElementById('modalTitle').value || 'Untitled',
                 icon: '📌',
-                team: document.getElementById('modalTeam').value,
-                manager: document.getElementById('modalManager').value,
-                startDate: document.getElementById('modalStartDate').value,
-                endDate: document.getElementById('modalEndDate').value,
-                phase: document.getElementById('modalPhase').value,
-                status: document.getElementById('modalStatus').value,
-                health: document.getElementById('modalHealth').value,
+                team: document.getElementById('modalTeam').value || '',
+                manager: document.getElementById('modalManager').value || '',
+                startDate: document.getElementById('modalStartDate').value || '',
+                endDate: document.getElementById('modalEndDate').value || '',
+                phase: document.getElementById('modalPhase').value || 'Discover',
+                status: document.getElementById('modalStatus').value || 'Not Started',
+                health: document.getElementById('modalHealth').value || 'G',
                 progress: 0,
                 budget: '$0',
                 resources: ''
             };
-
             projects.push(newProject);
             renderTable();
             closeModal();
-            
-            // Clear form
             document.getElementById('modalTitle').value = '';
             document.getElementById('modalTeam').value = '';
             document.getElementById('modalManager').value = '';
@@ -691,24 +290,25 @@
             input.type = 'text';
             input.value = currentValue;
             input.style.width = '100%';
-            
             cell.textContent = '';
             cell.appendChild(input);
             input.focus();
-            
-            input.addEventListener('blur', function() {
-                updateProject(id, field, this.value);
-            });
-            
-            input.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    this.blur();
-                }
-            });
+            input.addEventListener('blur', function() { updateProject(id, field, this.value); });
+            input.addEventListener('keypress', function(e) { if (e.key === 'Enter') this.blur(); });
         }
 
+        // --- createOnMiro corrigido (usa widgets.create) ---
         async function createOnMiro() {
             try {
+                if (typeof miro === 'undefined' || !miro.board || !miro.board.widgets) {
+                    throw new Error('Miro SDK não disponível ou sem permissão para widgets. Verifique se o app está instalado e se possui scopes adequadas.');
+                }
+
+                // opcional: solicitar autorização se falta
+                if (miro.isAuthorized && !await miro.isAuthorized()) {
+                    await miro.requestAuthorization();
+                }
+
                 const cardWidth = 600;
                 const cardHeight = 300;
                 const gap = 50;
@@ -716,86 +316,107 @@
                 let yPos = 0;
 
                 for (const project of projects) {
-                    const phaseColors = {
-                        Discover: '#F57F17',
-                        Define: '#2E7D32',
-                        Deliver: '#1565C0'
-                    };
-
-                    await miro.board.createShape({
-                        shape: 'rectangle',
+                    const phaseColors = { Discover: '#F57F17', Define: '#2E7D32', Deliver: '#1565C0' };
+                    await miro.board.widgets.create({
+                        type: 'shape',
                         x: xPos,
                         y: yPos,
                         width: cardWidth,
                         height: cardHeight,
                         style: {
                             fillColor: '#ffffff',
-                            borderColor: phaseColors[project.phase],
-                            borderWidth: 4,
-                            fontSize: 14
+                            borderColor: phaseColors[project.phase] || '#000000',
+                            borderWidth: 4
                         },
-                        content: `<strong>${project.icon} ${project.title}</strong><br><br>` +
-                                 `<strong>Phase:</strong> ${project.phase}<br>` +
-                                 `<strong>Team:</strong> ${project.team}<br>` +
-                                 `<strong>Manager:</strong> ${project.manager}<br>` +
-                                 `<strong>Status:</strong> ${project.status}<br>` +
-                                 `<strong>Health:</strong> ${project.health}<br>` +
-                                 `<strong>Progress:</strong> ${project.progress}%<br>` +
-                                 `<strong>Dates:</strong> ${project.startDate} → ${project.endDate}<br>` +
-                                 `<strong>Budget:</strong> ${project.budget}`
+                        // texto simples (não HTML) com quebras de linha
+                        text:
+                          `${project.icon} ${project.title}\n\n` +
+                          `Phase: ${project.phase}\n` +
+                          `Team: ${project.team}\n` +
+                          `Manager: ${project.manager}\n` +
+                          `Status: ${project.status}\n` +
+                          `Health: ${project.health}\n` +
+                          `Progress: ${project.progress}%\n` +
+                          `Dates: ${project.startDate} → ${project.endDate}\n` +
+                          `Budget: ${project.budget}`
                     });
 
                     xPos += cardWidth + gap;
-                    if (xPos > 2400) {
-                        xPos = 0;
-                        yPos += cardHeight + gap;
-                    }
+                    if (xPos > 2400) { xPos = 0; yPos += cardHeight + gap; }
                 }
 
                 alert('✅ Projects created on Miro Board!');
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Error creating cards. Make sure you have the Miro SDK loaded.');
+            } catch (err) {
+                console.error('Error creating on Miro:', err);
+                alert('Erro ao criar no Miro. Verifique console e se o app está instalado com as permissões necessárias (widgets write / boards write).');
             }
         }
 
+        // fechar modal do Miro (quando aberto dentro do Miro)
+        function closeModalWindow() {
+            if (typeof miro !== 'undefined' && miro.board && miro.board.ui && miro.board.ui.closeModal) {
+                miro.board.ui.closeModal();
+            } else {
+                // fallback: apenas fecha o modal local
+                closeModal();
+            }
+        }
+
+        // --- Inicialização e binding de eventos ---
+        document.getElementById('addProjectBtn').addEventListener('click', showAddModal);
+        document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
+        document.getElementById('saveProjectBtn').addEventListener('click', saveProject);
+        document.getElementById('createOnMiroBtn').addEventListener('click', createOnMiro);
+        document.getElementById('closeModalBtn').addEventListener('click', closeModalWindow);
+        document.getElementById('expandAllBtn').addEventListener('click', expandAll);
+        document.getElementById('collapseAllBtn').addEventListener('click', collapseAll);
+        document.getElementById('exportBtn').addEventListener('click', exportData);
+
         function exportData() {
             const csv = [
-                ['Title', 'Team', 'Manager', 'Start Date', 'End Date', 'Phase', 'Status', 'Health', 'Progress', 'Budget', 'Resources'],
-                ...projects.map(p => [
-                    p.title, p.team, p.manager, p.startDate, p.endDate, 
-                    p.phase, p.status, p.health, p.progress, p.budget, p.resources
-                ])
-            ].map(row => row.join(',')).join('\n');
-
+                ['Title','Team','Manager','Start Date','End Date','Phase','Status','Health','Progress','Budget','Resources'],
+                ...projects.map(p => [p.title,p.team,p.manager,p.startDate,p.endDate,p.phase,p.status,p.health,p.progress,p.budget,p.resources])
+            ].map(row => row.map(col => `"${String(col).replace(/"/g,'""')}"`).join(',')).join('\n');
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
             a.download = 'project-tracker.csv';
             a.click();
+            URL.revokeObjectURL(url);
         }
 
-        // Initialize
+        // render inicial
         renderTable();
 
-        // Initialize Miro SDK
+        // --- Miro SDK onReady (safe init) ---
         if (typeof miro !== 'undefined') {
-            miro.board.ui.on('icon:click', async () => {
-                await miro.board.ui.openModal({
-                    url: window.location.href,
-                    width: 1400,
-                    height: 900,
-                    fullscreen: false
-                });
+            miro.onReady(() => {
+                // quando o ícone do app for clicado no board, abre modal apontando para esta mesma página com ?modal=true
+                if (miro.board && miro.board.ui && miro.board.ui.openModal) {
+                    miro.board.ui.on('icon:click', async () => {
+                        // use uma URL específica se preferir (ex: /modal.html)
+                        const modalUrl = window.location.origin + window.location.pathname + '?modal=true';
+                        try {
+                            await miro.board.ui.openModal({
+                                url: modalUrl,
+                                width: 1000,
+                                height: 700,
+                                fullscreen: false
+                            });
+                        } catch (err) {
+                            console.error('Erro ao abrir modal do Miro:', err);
+                        }
+                    });
+                }
             });
         }
-        
-        // Botão para fechar modal
-        function closeModalWindow() {
-            if (typeof miro !== 'undefined') {
-                miro.board.ui.closeModal();
-            }
+
+        // Se a página for aberta como modal (ex: ?modal=true), você pode detectar e adaptar comportamento
+        if (window.location.search.includes('modal=true')) {
+            // Ex.: esconder rodapé, ajustar estilo, etc. (opcional)
+            // No Miro, o conteúdo será renderizado dentro do iframe do modal.
+            console.log('Aberto como modal (modal=true)');
         }
     </script>
 </body>
