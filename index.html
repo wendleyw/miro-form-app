@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>7-Day Design Sprint Request Form</title>
+    <title>7-Day Design Sprint App</title>
+    <script src="https://miro.com/app/static/sdk/v2/miro.js"></script>
     <style>
         * {
             margin: 0;
@@ -12,84 +13,73 @@
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #f5f5f5;
             padding: 20px;
-            line-height: 1.6;
+            font-size: 14px;
+            max-height: 100vh;
+            overflow-y: auto;
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 600px;
             margin: 0 auto;
         }
 
         .header {
             text-align: center;
-            margin-bottom: 40px;
-            padding: 30px;
+            margin-bottom: 30px;
+            padding: 20px;
             background: white;
             border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
         .header h1 {
-            font-size: 32px;
+            font-size: 24px;
             color: #333;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .header p {
             color: #666;
-            font-size: 16px;
+            font-size: 14px;
         }
 
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .form-card {
+        .form-section {
             background: white;
             border-radius: 12px;
-            padding: 30px;
+            padding: 24px;
+            margin-bottom: 16px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            min-height: 300px;
-            display: flex;
-            flex-direction: column;
         }
 
-        .card-title {
-            font-size: 20px;
+        .section-title {
+            font-size: 16px;
             font-weight: 700;
             color: #333;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
-        .card-emoji {
-            font-size: 24px;
-        }
-
-        .card-subtitle {
-            font-size: 14px;
+        .section-subtitle {
+            font-size: 12px;
             color: #888;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
 
         .form-group label {
             display: block;
             font-weight: 600;
             color: #333;
-            margin-bottom: 8px;
-            font-size: 14px;
+            margin-bottom: 6px;
+            font-size: 13px;
         }
 
         .form-group input[type="text"],
@@ -97,12 +87,12 @@
         .form-group textarea,
         .form-group select {
             width: 100%;
-            padding: 12px;
+            padding: 10px;
             border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 14px;
+            border-radius: 6px;
+            font-size: 13px;
             font-family: inherit;
-            transition: border-color 0.3s;
+            transition: border-color 0.2s;
         }
 
         .form-group input:focus,
@@ -114,23 +104,24 @@
 
         .form-group textarea {
             resize: vertical;
-            min-height: 80px;
+            min-height: 70px;
         }
 
         .radio-group {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
         }
 
         .radio-option {
             display: flex;
             align-items: center;
-            padding: 10px;
+            padding: 8px;
             border: 2px solid #e0e0e0;
-            border-radius: 8px;
+            border-radius: 6px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.2s;
+            font-size: 13px;
         }
 
         .radio-option:hover {
@@ -139,9 +130,7 @@
         }
 
         .radio-option input[type="radio"] {
-            margin-right: 10px;
-            width: 18px;
-            height: 18px;
+            margin-right: 8px;
             cursor: pointer;
         }
 
@@ -152,7 +141,7 @@
 
         .submit-section {
             background: white;
-            padding: 30px;
+            padding: 20px;
             border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             text-align: center;
@@ -162,33 +151,57 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            padding: 16px 48px;
-            font-size: 16px;
+            padding: 14px 40px;
+            font-size: 15px;
             font-weight: 600;
             border-radius: 8px;
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
         }
 
         .btn-submit:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
         }
 
-        .btn-submit:active {
-            transform: translateY(0);
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
         }
 
         .example-text {
-            font-size: 12px;
+            font-size: 11px;
             color: #999;
             font-style: italic;
-            margin-top: 4px;
+            margin-top: 3px;
         }
 
-        @media (max-width: 768px) {
-            .form-grid {
-                grid-template-columns: 1fr;
+        .success-message {
+            display: none;
+            padding: 16px;
+            background: #C8E6C9;
+            color: #2E7D32;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .success-message.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
         }
     </style>
@@ -196,249 +209,191 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🏁 7-Day Design Sprint Request Form</h1>
-            <p>Preencha este formulário para solicitar seu projeto de design</p>
+            <h1>🏁 7-Day Design Sprint</h1>
+            <p>Preencha e crie automaticamente no Miro Board</p>
+        </div>
+
+        <div class="success-message" id="successMessage">
+            ✅ Cards criados com sucesso no board!
         </div>
 
         <form id="designForm">
-            <!-- Project Overview Section -->
-            <div class="form-grid">
-                <div class="form-card">
-                    <div class="card-title">
-                        <span class="card-emoji">🧠</span>
-                        Project Overview
-                    </div>
-                    <div class="card-subtitle">Informações básicas do projeto</div>
-                    
-                    <div class="form-group">
-                        <label for="projectName">1. Project Name</label>
-                        <input type="text" id="projectName" placeholder="Nome do seu projeto">
-                    </div>
+            <!-- Project Overview -->
+            <div class="form-section">
+                <div class="section-title">🧠 Project Overview</div>
+                <div class="section-subtitle">Informações básicas do projeto</div>
+                
+                <div class="form-group">
+                    <label for="projectName">Project Name *</label>
+                    <input type="text" id="projectName" required placeholder="Nome do projeto">
+                </div>
 
-                    <div class="form-group">
-                        <label for="projectGoal">2. Goal of this request</label>
-                        <textarea id="projectGoal" placeholder='Ex: "Promote new service", "Update existing banner", "Create a carousel for launch"'></textarea>
-                        <div class="example-text">Descreva o objetivo principal do projeto</div>
+                <div class="form-group">
+                    <label for="projectGoal">Goal of this request *</label>
+                    <textarea id="projectGoal" required placeholder="Ex: Promote new service, Update existing banner..."></textarea>
+                </div>
+            </div>
+
+            <!-- Type & Platform -->
+            <div class="form-section">
+                <div class="section-title">📦 Deliverable & Platform</div>
+                <div class="section-subtitle">Tipo e onde será usado</div>
+                
+                <div class="form-group">
+                    <label>Type of Deliverable *</label>
+                    <select id="deliverable" required>
+                        <option value="">Selecione...</option>
+                        <option value="Social Media Post">Social Media Post</option>
+                        <option value="Carousel / Story Set">Carousel / Story Set</option>
+                        <option value="Website Banner">Website Banner</option>
+                        <option value="Print Material">Print Material</option>
+                        <option value="Custom Design">Custom Design</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Main Platform *</label>
+                    <select id="platform" required>
+                        <option value="">Selecione...</option>
+                        <option value="Instagram">Instagram</option>
+                        <option value="Facebook">Facebook</option>
+                        <option value="LinkedIn">LinkedIn</option>
+                        <option value="Website">Website</option>
+                        <option value="Print">Print</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Content & Copy -->
+            <div class="form-section">
+                <div class="section-title">✍️ Content & Copy</div>
+                <div class="section-subtitle">Textos e conteúdo</div>
+                
+                <div class="form-group">
+                    <label>Do you have the copy? *</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="hasCopy" value="Yes, I'll paste it below" required>
+                            Yes, I'll paste it below
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="hasCopy" value="Not yet, please help me write it">
+                            Not yet, please help me write it
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="hasCopy" value="Partially ready">
+                            Partially ready
+                        </label>
                     </div>
                 </div>
 
-                <div class="form-card">
-                    <div class="card-title">
-                        <span class="card-emoji">📦</span>
-                        Tipo de Entrega
-                    </div>
-                    <div class="card-subtitle">Selecione o formato desejado</div>
-                    
-                    <div class="form-group">
-                        <label>3. Type of Deliverable</label>
-                        <div class="radio-group">
-                            <label class="radio-option">
-                                <input type="radio" name="deliverable" value="social">
-                                Social Media Post
-                            </label>
-                            <label class="radio-option">
-                                <input type="radio" name="deliverable" value="carousel">
-                                Carousel / Story Set
-                            </label>
-                            <label class="radio-option">
-                                <input type="radio" name="deliverable" value="banner">
-                                Website Banner
-                            </label>
-                            <label class="radio-option">
-                                <input type="radio" name="deliverable" value="print">
-                                Print Material
-                            </label>
-                            <label class="radio-option">
-                                <input type="radio" name="deliverable" value="custom">
-                                Custom Design
-                            </label>
-                        </div>
+                <div class="form-group">
+                    <label for="copyText">Your copy or key messages</label>
+                    <textarea id="copyText" placeholder="Cole seu texto aqui..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="visualRef">Visual references (links)</label>
+                    <input type="text" id="visualRef" placeholder="Google Drive, Dropbox, etc.">
+                </div>
+            </div>
+
+            <!-- Visual Direction -->
+            <div class="form-section">
+                <div class="section-title">🎨 Visual Direction</div>
+                <div class="section-subtitle">Estilo e direção visual</div>
+                
+                <div class="form-group">
+                    <label>Preferred style *</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="style" value="Minimalist" required>
+                            Minimalist
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="style" value="Modern">
+                            Modern
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="style" value="Elegant">
+                            Elegant
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="style" value="Bold / Colorful">
+                            Bold / Colorful
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="style" value="Custom">
+                            Custom
+                        </label>
                     </div>
                 </div>
 
-                <div class="form-card">
-                    <div class="card-title">
-                        <span class="card-emoji">🌐</span>
-                        Plataforma
-                    </div>
-                    <div class="card-subtitle">Onde será publicado?</div>
-                    
-                    <div class="form-group">
-                        <label>4. Main Platform</label>
-                        <div class="radio-group">
-                            <label class="radio-option">
-                                <input type="radio" name="platform" value="instagram">
-                                Instagram
-                            </label>
-                            <label class="radio-option">
-                                <input type="radio" name="platform" value="facebook">
-                                Facebook
-                            </label>
-                            <label class="radio-option">
-                                <input type="radio" name="platform" value="linkedin">
-                                LinkedIn
-                            </label>
-                            <label class="radio-option">
-                                <input type="radio" name="platform" value="website">
-                                Website
-                            </label>
-                            <label class="radio-option">
-                                <input type="radio" name="platform" value="print">
-                                Print
-                            </label>
-                            <label class="radio-option">
-                                <input type="radio" name="platform" value="other">
-                                Other
-                            </label>
-                        </div>
+                <div class="form-group">
+                    <label for="visualNotes">Additional visual notes</label>
+                    <textarea id="visualNotes" placeholder="Descreva ideias visuais, mood boards..."></textarea>
+                </div>
+            </div>
+
+            <!-- Delivery -->
+            <div class="form-section">
+                <div class="section-title">🗓️ Delivery</div>
+                <div class="section-subtitle">Prazo e prioridade</div>
+                
+                <div class="form-group">
+                    <label for="deliveryDate">Preferred delivery date *</label>
+                    <input type="date" id="deliveryDate" required>
+                    <div class="example-text">Dentro do período de 7 dias</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Priority level *</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="priority" value="Normal" required>
+                            Normal (within sprint)
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="priority" value="High">
+                            High (urgent — same week)
+                        </label>
                     </div>
                 </div>
 
-                <div class="form-card">
-                    <div class="card-title">
-                        <span class="card-emoji">✍️</span>
-                        Content & Copy
-                    </div>
-                    <div class="card-subtitle">Textos e conteúdo</div>
-                    
-                    <div class="form-group">
-                        <label>1. Do you already have the copy (text)?</label>
-                        <div class="radio-group">
-                            <label class="radio-option">
-                                <input type="radio" name="hasCopy" value="yes">
-                                Yes, I'll paste it below
-                            </label>
-                            <label class="radio-option">
-                                <input type="radio" name="hasCopy" value="no">
-                                Not yet, please help me write it
-                            </label>
-                            <label class="radio-option">
-                                <input type="radio" name="hasCopy" value="partial">
-                                Partially ready
-                            </label>
-                        </div>
-                    </div>
+                <div class="form-group">
+                    <label for="approvalContact">Final approval contact</label>
+                    <input type="text" id="approvalContact" placeholder="Se diferente de você">
                 </div>
+            </div>
 
-                <div class="form-card">
-                    <div class="card-title">
-                        <span class="card-emoji">📝</span>
-                        Seu Texto
-                    </div>
-                    <div class="card-subtitle">Cole ou escreva o conteúdo</div>
-                    
-                    <div class="form-group">
-                        <label for="copyText">2. Paste your copy or key messages here</label>
-                        <textarea id="copyText" style="min-height: 120px;" placeholder="Cole seu texto ou principais mensagens aqui..."></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="visualRef">3. Visual references (links)</label>
-                        <input type="text" id="visualRef" placeholder="Google Drive, Dropbox, etc.">
-                    </div>
-                </div>
-
-                <div class="form-card">
-                    <div class="card-title">
-                        <span class="card-emoji">🎨</span>
-                        Visual Direction
-                    </div>
-                    <div class="card-subtitle">Estilo e direção visual</div>
-                    
-                    <div class="form-group">
-                        <label>1. Preferred style</label>
-                        <div class="radio-group">
-                            <label class="radio-option">
-                                <input type="radio" name="style" value="minimalist">
-                                Minimalist
-                            </label>
-                            <label class="radio-option">
-                                <input type="radio" name="style" value="modern">
-                                Modern
-                            </label>
-                            <label class="radio-option">
-                                <input type="radio" name="style" value="elegant">
-                                Elegant
-                            </label>
-                            <label class="radio-option">
-                                <input type="radio" name="style" value="bold">
-                                Bold / Colorful
-                            </label>
-                            <label class="radio-option">
-                                <input type="radio" name="style" value="customStyle">
-                                Custom (describe below)
-                            </label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-card">
-                    <div class="card-title">
-                        <span class="card-emoji">🖼️</span>
-                        Visual Notes
-                    </div>
-                    <div class="card-subtitle">Notas adicionais sobre o visual</div>
-                    
-                    <div class="form-group">
-                        <label for="visualNotes">2. Additional visual notes or mood board links</label>
-                        <textarea id="visualNotes" style="min-height: 140px;" placeholder="Descreva ideias visuais, referências ou cole links de mood boards..."></textarea>
-                    </div>
-                </div>
-
-                <div class="form-card">
-                    <div class="card-title">
-                        <span class="card-emoji">🗓️</span>
-                        Delivery
-                    </div>
-                    <div class="card-subtitle">Prazo e prioridade</div>
-                    
-                    <div class="form-group">
-                        <label for="deliveryDate">1. Preferred delivery date</label>
-                        <input type="date" id="deliveryDate">
-                        <div class="example-text">Dentro do período de 7 dias</div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>2. Priority level</label>
-                        <div class="radio-group">
-                            <label class="radio-option">
-                                <input type="radio" name="priority" value="normal">
-                                Normal (within sprint)
-                            </label>
-                            <label class="radio-option">
-                                <input type="radio" name="priority" value="high">
-                                High (urgent — same week)
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="approvalContact">3. Final approval contact</label>
-                        <input type="text" id="approvalContact" placeholder="Se diferente de você">
-                    </div>
-                </div>
-
-                <div class="form-card">
-                    <div class="card-title">
-                        <span class="card-emoji">✅</span>
-                        Confirmation
-                    </div>
-                    <div class="card-subtitle">Informações finais</div>
-                    
-                    <div class="form-group">
-                        <label for="additionalNotes">Anything else your designer should know?</label>
-                        <textarea id="additionalNotes" style="min-height: 140px;" placeholder="Informações adicionais, requisitos especiais, observações..."></textarea>
-                    </div>
+            <!-- Confirmation -->
+            <div class="form-section">
+                <div class="section-title">✅ Confirmation</div>
+                <div class="section-subtitle">Informações finais</div>
+                
+                <div class="form-group">
+                    <label for="additionalNotes">Anything else your designer should know?</label>
+                    <textarea id="additionalNotes" placeholder="Informações adicionais, requisitos especiais..."></textarea>
                 </div>
             </div>
 
             <div class="submit-section">
-                <button type="submit" class="btn-submit">📤 Submit Design Request</button>
+                <button type="submit" class="btn-submit" id="submitBtn">
+                    🚀 Create Cards on Miro Board
+                </button>
             </div>
         </form>
     </div>
 
     <script>
+        // Initialize Miro SDK
+        async function initMiro() {
+            await miro.board.ui.on('icon:click', async () => {
+                await miro.board.ui.openPanel({url: 'index.html'});
+            });
+        }
+
         // Radio button styling
         document.querySelectorAll('.radio-option').forEach(option => {
             const radio = option.querySelector('input[type="radio"]');
@@ -453,14 +408,19 @@
         });
 
         // Form submission
-        document.getElementById('designForm').addEventListener('submit', function(e) {
+        document.getElementById('designForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Creating cards...';
+
+            // Collect form data
             const formData = {
                 projectName: document.getElementById('projectName').value,
                 projectGoal: document.getElementById('projectGoal').value,
-                deliverable: document.querySelector('input[name="deliverable"]:checked')?.value,
-                platform: document.querySelector('input[name="platform"]:checked')?.value,
+                deliverable: document.getElementById('deliverable').value,
+                platform: document.getElementById('platform').value,
                 hasCopy: document.querySelector('input[name="hasCopy"]:checked')?.value,
                 copyText: document.getElementById('copyText').value,
                 visualRef: document.getElementById('visualRef').value,
@@ -472,9 +432,172 @@
                 additionalNotes: document.getElementById('additionalNotes').value
             };
 
-            console.log('Form Data:', formData);
-            alert('✅ Solicitação enviada com sucesso! Os dados foram registrados no console.');
+            try {
+                // Create cards on Miro board
+                await createMiroCards(formData);
+                
+                // Show success message
+                document.getElementById('successMessage').classList.add('show');
+                setTimeout(() => {
+                    document.getElementById('successMessage').classList.remove('show');
+                }, 3000);
+                
+                // Reset form
+                this.reset();
+                document.querySelectorAll('.radio-option.selected').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                
+            } catch (error) {
+                console.error('Error creating cards:', error);
+                alert('Erro ao criar cards. Verifique o console para detalhes.');
+            }
+            
+            submitBtn.disabled = false;
+            submitBtn.textContent = '🚀 Create Cards on Miro Board';
         });
+
+        // Function to create cards on Miro board
+        async function createMiroCards(data) {
+            const cardWidth = 600;
+            const cardHeight = 300;
+            const gap = 50;
+            let xPos = 0;
+            let yPos = 0;
+
+            // Card 1: Project Overview
+            await miro.board.createShape({
+                shape: 'rectangle',
+                x: xPos,
+                y: yPos,
+                width: cardWidth,
+                height: cardHeight,
+                style: {
+                    fillColor: '#ffffff',
+                    borderColor: '#4A90E2',
+                    borderWidth: 3,
+                    fontSize: 14
+                },
+                content: `<strong>🧠 PROJECT OVERVIEW</strong><br><br>` +
+                         `<strong>Project:</strong> ${data.projectName}<br><br>` +
+                         `<strong>Goal:</strong><br>${data.projectGoal}`
+            });
+
+            xPos += cardWidth + gap;
+
+            // Card 2: Deliverable & Platform
+            await miro.board.createShape({
+                shape: 'rectangle',
+                x: xPos,
+                y: yPos,
+                width: cardWidth,
+                height: cardHeight,
+                style: {
+                    fillColor: '#ffffff',
+                    borderColor: '#667eea',
+                    borderWidth: 3,
+                    fontSize: 14
+                },
+                content: `<strong>📦 DELIVERABLE & PLATFORM</strong><br><br>` +
+                         `<strong>Type:</strong> ${data.deliverable}<br><br>` +
+                         `<strong>Platform:</strong> ${data.platform}`
+            });
+
+            xPos += cardWidth + gap;
+
+            // Card 3: Content & Copy
+            await miro.board.createShape({
+                shape: 'rectangle',
+                x: xPos,
+                y: yPos,
+                width: cardWidth,
+                height: cardHeight,
+                style: {
+                    fillColor: '#ffffff',
+                    borderColor: '#764ba2',
+                    borderWidth: 3,
+                    fontSize: 14
+                },
+                content: `<strong>✍️ CONTENT & COPY</strong><br><br>` +
+                         `<strong>Has Copy:</strong> ${data.hasCopy}<br><br>` +
+                         `<strong>Copy:</strong><br>${data.copyText || 'N/A'}<br><br>` +
+                         `<strong>References:</strong> ${data.visualRef || 'N/A'}`
+            });
+
+            // Move to next row
+            xPos = 0;
+            yPos += cardHeight + gap;
+
+            // Card 4: Visual Direction
+            await miro.board.createShape({
+                shape: 'rectangle',
+                x: xPos,
+                y: yPos,
+                width: cardWidth,
+                height: cardHeight,
+                style: {
+                    fillColor: '#ffffff',
+                    borderColor: '#FFA726',
+                    borderWidth: 3,
+                    fontSize: 14
+                },
+                content: `<strong>🎨 VISUAL DIRECTION</strong><br><br>` +
+                         `<strong>Style:</strong> ${data.style}<br><br>` +
+                         `<strong>Notes:</strong><br>${data.visualNotes || 'N/A'}`
+            });
+
+            xPos += cardWidth + gap;
+
+            // Card 5: Delivery
+            await miro.board.createShape({
+                shape: 'rectangle',
+                x: xPos,
+                y: yPos,
+                width: cardWidth,
+                height: cardHeight,
+                style: {
+                    fillColor: '#ffffff',
+                    borderColor: '#66BB6A',
+                    borderWidth: 3,
+                    fontSize: 14
+                },
+                content: `<strong>🗓️ DELIVERY</strong><br><br>` +
+                         `<strong>Date:</strong> ${data.deliveryDate}<br><br>` +
+                         `<strong>Priority:</strong> ${data.priority}<br><br>` +
+                         `<strong>Approval Contact:</strong> ${data.approvalContact || 'N/A'}`
+            });
+
+            xPos += cardWidth + gap;
+
+            // Card 6: Additional Notes
+            if (data.additionalNotes) {
+                await miro.board.createShape({
+                    shape: 'rectangle',
+                    x: xPos,
+                    y: yPos,
+                    width: cardWidth,
+                    height: cardHeight,
+                    style: {
+                        fillColor: '#ffffff',
+                        borderColor: '#EF5350',
+                        borderWidth: 3,
+                        fontSize: 14
+                    },
+                    content: `<strong>✅ ADDITIONAL NOTES</strong><br><br>${data.additionalNotes}`
+                });
+            }
+
+            // Zoom to fit all cards
+            await miro.board.viewport.zoomTo({
+                x: (cardWidth * 1.5),
+                y: (cardHeight + gap / 2),
+                width: (cardWidth * 3 + gap * 2),
+                height: (cardHeight * 2 + gap)
+            });
+        }
+
+        // Initialize on load
+        initMiro();
     </script>
 </body>
 </html>
