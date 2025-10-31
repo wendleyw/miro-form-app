@@ -1,791 +1,144 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add to Project Tracker - Miro</title>
-    <script src="https://miro.com/app/static/sdk/v2/miro.js"></script>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        html, body {
-            height: 100%;
-            overflow: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            padding: 20px;
-            background: #f5f5f5;
-        }
-
-        .container {
-            max-width: 500px;
-            margin: 0 auto;
-            background: white;
-            padding: 32px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            margin-bottom: 40px;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 32px;
-            padding-bottom: 24px;
-            border-bottom: 3px solid #4262ff;
-        }
-
-        h1 {
-            color: #050038;
-            font-size: 26px;
-            margin-bottom: 8px;
-            font-weight: 700;
-        }
-
-        .subtitle {
-            color: #666;
-            font-size: 14px;
-        }
-
-        .tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 32px;
-            border-bottom: 2px solid #e0e0e0;
-        }
-
-        .tab {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            background: none;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            color: #666;
-            border-bottom: 3px solid transparent;
-            transition: all 0.2s;
-        }
-
-        .tab:hover {
-            color: #4262ff;
-        }
-
-        .tab.active {
-            color: #4262ff;
-            border-bottom-color: #4262ff;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .section {
-            margin-bottom: 24px;
-        }
-
-        .section-title {
-            font-size: 14px;
-            font-weight: 700;
-            color: #050038;
-            margin-bottom: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 6px;
-            color: #333;
-            font-weight: 600;
-            font-size: 13px;
-        }
-
-        input, textarea, select {
-            width: 100%;
-            padding: 10px 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 6px;
-            font-size: 14px;
-            font-family: inherit;
-            transition: all 0.2s;
-            background: white;
-        }
-
-        input:focus, textarea:focus, select:focus {
-            outline: none;
-            border-color: #4262ff;
-            box-shadow: 0 0 0 3px rgba(66, 98, 255, 0.1);
-        }
-
-        textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        .input-hint {
-            font-size: 12px;
-            color: #999;
-            margin-top: 4px;
-        }
-
-        .phase-selector {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            margin-top: 8px;
-        }
-
-        .phase-option {
-            padding: 10px;
-            border: 2px solid #e0e0e0;
-            border-radius: 6px;
-            cursor: pointer;
-            text-align: center;
-            transition: all 0.2s;
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        .phase-option input[type="radio"] {
-            display: none;
-        }
-
-        .phase-option.discover {
-            background: #fff9b1;
-        }
-
-        .phase-option.define {
-            background: #d5f692;
-        }
-
-        .phase-option.deliver {
-            background: #add8e6;
-        }
-
-        .phase-option.selected {
-            border-color: #000;
-            box-shadow: 0 0 0 2px #000;
-        }
-
-        button {
-            width: 100%;
-            padding: 14px;
-            background: #4262ff;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 20px;
-        }
-
-        button:hover {
-            background: #2d4bd9;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(66, 98, 255, 0.3);
-        }
-
-        button:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .success-message, .error-message {
-            display: none;
-            padding: 16px;
-            border-radius: 8px;
-            margin-top: 16px;
-            text-align: center;
-            font-weight: 600;
-        }
-
-        .success-message {
-            background: #d4edda;
-            color: #155724;
-            border: 2px solid #c3e6cb;
-        }
-
-        .error-message {
-            background: #f8d7da;
-            color: #721c24;
-            border: 2px solid #f5c6cb;
-        }
-
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 20px;
-        }
-
-        .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #4262ff;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .info-box {
-            background: #e7f3ff;
-            border-left: 4px solid #4262ff;
-            padding: 12px;
-            margin-bottom: 20px;
-            border-radius: 4px;
-            font-size: 13px;
-            color: #333;
-        }
-
-        .file-preview {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 10px;
-        }
-
-        .file-preview-item {
-            position: relative;
-            width: 80px;
-            height: 80px;
-            border-radius: 6px;
-            overflow: hidden;
-            border: 2px solid #e0e0e0;
-        }
-
-        .file-preview-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .file-preview-item .remove-btn {
-            position: absolute;
-            top: 2px;
-            right: 2px;
-            background: #ff4444;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            font-size: 12px;
-            cursor: pointer;
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Miro Briefing Wizard — English</title>
+  <script src="https://miro.com/app/static/sdk/v2/miro.js"></script>
+  <style>
+    body { font-family: Inter, system-ui, Arial; margin: 0; padding: 20px; background:#f6f7f9; color:#111; }
+    h1 { font-size:18px; margin-bottom:8px; }
+    label { display:block; margin-top:12px; font-weight:600; font-size:13px; }
+    textarea, input, select { width:100%; box-sizing:border-box; padding:8px; margin-top:6px; border:1px solid #ddd; border-radius:6px; font-size:13px; background:white; }
+    textarea { min-height:80px; resize:vertical; }
+    .row { display:flex; gap:12px; }
+    .col { flex:1; }
+    button { margin-top:14px; padding:10px 14px; border:0; background:#1f8ceb; color:white; border-radius:8px; cursor:pointer; font-weight:700; }
+    .small { font-size:12px; color:#666; margin-top:6px; }
+    .notice { background:#fff; padding:10px; border-radius:8px; border:1px solid #eee; margin-bottom:12px; }
+    footer { margin-top:18px; font-size:12px; color:#666; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>📊 Project Manager</h1>
-            <p class="subtitle">Add tasks to tracker or create project brief</p>
-        </div>
+  <h1>Briefing Wizard — Project Intake Form</h1>
+  <div class="notice">
+    Fill out this form. When you click <strong>Generate Template</strong>, the system will create a visual board layout with all sections automatically.
+  </div>
 
-        <div class="tabs">
-            <button class="tab active" onclick="switchTab('tracker')">Add to Tracker</button>
-            <button class="tab" onclick="switchTab('brief')">Create Brief</button>
-        </div>
+  <label>Project Name</label>
+  <input id="projectName" placeholder="e.g., Fall 2026 Campaign" />
 
-        <!-- TAB 1: Add to Tracker -->
-        <div id="tracker-tab" class="tab-content active">
-            <div class="info-box">
-                💡 This will add a new row to your Project Tracker table
-            </div>
-
-            <form id="trackerForm">
-                <div class="form-group">
-                    <label for="taskTitle">Task Title *</label>
-                    <input type="text" id="taskTitle" required placeholder="e.g., User Journey Diagrams">
-                </div>
-
-                <div class="form-group">
-                    <label for="taskPhase">Phase *</label>
-                    <div class="phase-selector">
-                        <label class="phase-option discover">
-                            <input type="radio" name="phase" value="discover" checked>
-                            Discover
-                        </label>
-                        <label class="phase-option define">
-                            <input type="radio" name="phase" value="define">
-                            Define
-                        </label>
-                        <label class="phase-option deliver">
-                            <input type="radio" name="phase" value="deliver">
-                            Deliver
-                        </label>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="startDate">Start Date *</label>
-                    <input type="date" id="startDate" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="endDate">End Date *</label>
-                    <input type="date" id="endDate" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="status">Status</label>
-                    <select id="status">
-                        <option value="">Not started</option>
-                        <option value="in-progress">In progress</option>
-                        <option value="completed">Completed</option>
-                        <option value="blocked">Blocked</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="resources">Resources</label>
-                    <input type="text" id="resources" placeholder="Team members or resources">
-                </div>
-
-                <div class="form-group">
-                    <label for="notes">Notes</label>
-                    <textarea id="notes" placeholder="Additional information..."></textarea>
-                </div>
-
-                <button type="submit">Add to Tracker</button>
-            </form>
-        </div>
-
-        <!-- TAB 2: Create Brief -->
-        <div id="brief-tab" class="tab-content">
-            <div class="info-box">
-                📋 This will create a complete project brief template
-            </div>
-
-            <form id="briefForm">
-                <div class="section">
-                    <div class="section-title">Project Information</div>
-                    
-                    <div class="form-group">
-                        <label for="projectName">Project Name *</label>
-                        <input type="text" id="projectName" required placeholder="Enter project name">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="projectDescription">Project Overview *</label>
-                        <textarea id="projectDescription" required placeholder="Project idea, goals, purpose, and context..."></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="targetAudience">Target Audience *</label>
-                        <textarea id="targetAudience" required placeholder="Demographics, interests, behaviors..."></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="objectives">Goals / Objectives *</label>
-                        <textarea id="objectives" required placeholder="Expected outcomes..."></textarea>
-                    </div>
-                </div>
-
-                <div class="section">
-                    <div class="section-title">Deliverables</div>
-                    
-                    <div class="form-group">
-                        <label for="fileTypes">File Types</label>
-                        <input type="text" id="fileTypes" placeholder="e.g., JPG, PNG, PDF">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="fileSizes">File Sizes</label>
-                        <input type="text" id="fileSizes" placeholder="e.g., 1080x1920px">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="numberOfAssets">Number of Assets</label>
-                        <input type="text" id="numberOfAssets" placeholder="e.g., 3 images, 1 video">
-                    </div>
-                </div>
-
-                <div class="section">
-                    <div class="section-title">Inspiration</div>
-                    
-                    <div class="form-group">
-                        <label for="references">References</label>
-                        <textarea id="references" placeholder="Links, examples, mood boards..."></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="inspirationImages">Upload Images</label>
-                        <input type="file" id="inspirationImages" accept="image/*" multiple>
-                        <div class="file-preview" id="filePreview"></div>
-                    </div>
-                </div>
-
-                <button type="submit">Create Brief Template</button>
-            </form>
-        </div>
-
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <p style="margin-top: 12px; color: #666;">Creating...</p>
-        </div>
-
-        <div class="success-message" id="successMsg">
-            ✓ Created successfully!
-        </div>
-        <div class="error-message" id="errorMsg">
-            ✗ Error. Please try again.
-        </div>
+  <div class="row">
+    <div class="col">
+      <label>Project Overview / Description</label>
+      <textarea id="overview" placeholder="Describe the idea, goals, purpose, and context. Why is this project important?"></textarea>
     </div>
+    <div class="col">
+      <label>Target Audience</label>
+      <textarea id="audience" placeholder="Who is the main audience? (age, occupation, interests, etc.)"></textarea>
+    </div>
+  </div>
 
-    <script>
-        let uploadedFiles = [];
-        let currentTab = 'tracker';
+  <label>Goals / Objectives (separated by commas)</label>
+  <input id="goals" placeholder="e.g., awareness, engagement, conversions" />
 
-        // Tab switching
-        function switchTab(tab) {
-            currentTab = tab;
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            
-            event.target.classList.add('active');
-            document.getElementById(tab + '-tab').classList.add('active');
+  <label>Final Copy / Messaging (REQUIRED)</label>
+  <textarea id="copy" placeholder="Enter the main message or copy."></textarea>
+  <div class="small">If left blank, the system will flag it as missing (can later auto-generate via AI).</div>
+
+  <div class="row">
+    <div class="col">
+      <label>Deliverables</label>
+      <input id="deliverables" placeholder="e.g., 3 hero images (1920x1080), 5 social posts (1080x1080)" />
+    </div>
+    <div class="col">
+      <label>Timeline (Draft, Review, Final)</label>
+      <input id="dates" placeholder="e.g., Draft Nov 5, Review Nov 10, Final Nov 15" />
+    </div>
+  </div>
+
+  <label>References (URLs separated by commas)</label>
+  <input id="references" placeholder="e.g., https://dribbble.com/..., https://behance.net/..." />
+
+  <label>Style / Design Notes</label>
+  <input id="styleNotes" placeholder="e.g., colors: #111 & #F5A623, typography: Inter, style: clean/minimal" />
+
+  <label>Resource Links / Assets (URLs or descriptions)</label>
+  <input id="resources" placeholder="e.g., Google Drive folder with logos or assets" />
+
+  <button id="generateBtn">Generate Template</button>
+
+  <footer>Prototype plugin for Miro — auto-generates a creative brief layout.</footer>
+
+  <script>
+    function escapeHtml(unsafe) {
+      return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    miro.onReady(async () => {
+      document.getElementById('generateBtn').addEventListener('click', async () => {
+        const projectName = document.getElementById('projectName').value.trim() || 'Untitled Project';
+        const overview = document.getElementById('overview').value.trim();
+        const audience = document.getElementById('audience').value.trim();
+        const goals = document.getElementById('goals').value.trim();
+        const copy = document.getElementById('copy').value.trim();
+        const deliverables = document.getElementById('deliverables').value.trim();
+        const dates = document.getElementById('dates').value.trim();
+        const references = document.getElementById('references').value.trim();
+        const styleNotes = document.getElementById('styleNotes').value.trim();
+        const resources = document.getElementById('resources').value.trim();
+
+        const missing = [];
+        if (!copy) missing.push('Final Copy');
+
+        if (missing.length) {
+          const proceed = confirm('Missing info: ' + missing.join(', ') + '. Continue anyway?');
+          if (!proceed) return;
         }
 
-        // Phase selector
-        document.querySelectorAll('.phase-option').forEach(option => {
-            option.addEventListener('click', function() {
-                document.querySelectorAll('.phase-option').forEach(o => o.classList.remove('selected'));
-                this.classList.add('selected');
-                this.querySelector('input').checked = true;
-            });
+        const viewport = await miro.board.viewport.get();
+        const frameX = viewport.x;
+        const frameY = viewport.y;
+        const frameWidth = 1200;
+        const frameHeight = 700;
+
+        const frame = await miro.board.widgets.create({
+          type: 'frame',
+          title: projectName,
+          x: frameX,
+          y: frameY,
+          width: frameWidth,
+          height: frameHeight,
+          style: { backgroundColor: '#ffffff' }
         });
 
-        // File upload
-        document.getElementById('inspirationImages').addEventListener('change', function(e) {
-            const files = Array.from(e.target.files);
-            const preview = document.getElementById('filePreview');
-            
-            files.forEach((file) => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    uploadedFiles.push({
-                        name: file.name,
-                        data: e.target.result
-                    });
-                    
-                    const div = document.createElement('div');
-                    div.className = 'file-preview-item';
-                    div.innerHTML = `
-                        <img src="${e.target.result}" alt="Preview">
-                        <button type="button" class="remove-btn" data-index="${uploadedFiles.length - 1}">×</button>
-                    `;
-                    preview.appendChild(div);
-                };
-                reader.readAsDataURL(file);
-            });
-        });
+        const left = -520;
+        const center = 0;
+        const right = 520;
+        const top = -220;
+        const mid = -20;
+        const bottom = 230;
 
-        document.getElementById('filePreview').addEventListener('click', function(e) {
-            if (e.target.classList.contains('remove-btn')) {
-                const index = parseInt(e.target.dataset.index);
-                uploadedFiles.splice(index, 1);
-                e.target.closest('.file-preview-item').remove();
-            }
-        });
+        const widgets = [
+          { type: 'sticky_note', text: `Project Overview / Description\n\n${overview || '(not provided)'}`, x: frameX + left + 240, y: frameY + top + 120, width: 420, style: { stickyNoteBackgroundColor: 'light_yellow' } },
+          { type: 'sticky_note', text: `Target Audience\n\n${audience || '(not provided)'}`, x: frameX + left + 240, y: frameY + mid + 40, width: 420, style: { stickyNoteBackgroundColor: 'light_blue' } },
+          { type: 'sticky_note', text: `Goals / Objectives\n\n${goals || '(not provided)'}`, x: frameX + left + 240, y: frameY + bottom - 40, width: 420, style: { stickyNoteBackgroundColor: 'light_green' } },
+          { type: 'sticky_note', text: `Final Copy / Messaging\n\n${copy || '--- MISSING FINAL COPY ---'}`, x: frameX + center, y: frameY + top + 100, width: 420, style: { stickyNoteBackgroundColor: copy ? 'light_pink' : 'red_orange' } },
+          { type: 'text', text: `<b>Deliverables:</b>\n${escapeHtml(deliverables || '- not specified -')}\n\n<b>Timeline:</b>\n${escapeHtml(dates || '- not specified -')}`, x: frameX + center, y: frameY + mid + 80, width: 420 },
+          { type: 'sticky_note', text: `Resource Links / Assets\n\n${resources || '(none)'}`, x: frameX + center, y: frameY + bottom - 30, width: 420, style: { stickyNoteBackgroundColor: 'light_gray' } },
+          { type: 'sticky_note', text: `Inspirations / References\n\n${references || '(none)'}`, x: frameX + right - 80, y: frameY + top + 120, width: 420, style: { stickyNoteBackgroundColor: 'light_blue' } },
+          { type: 'sticky_note', text: `Style / Design Notes\n\n${styleNotes || '(none)'}`, x: frameX + right - 80, y: frameY + mid + 60, width: 420, style: { stickyNoteBackgroundColor: 'light_yellow' } },
+        ];
 
-        // Initialize Miro
-        async function initMiro() {
-            try {
-                await miro.board.ui.on('icon:click', async () => {
-                    await miro.board.ui.openPanel({url: window.location.href});
-                });
-            } catch (error) {
-                console.log('Dev mode');
-            }
-        }
-
-        // Add to tracker
-        async function addToTracker(data) {
-            const phaseColors = {
-                'discover': '#fff9b1',
-                'define': '#d5f692',
-                'deliver': '#add8e6'
-            };
-
-            const statusColors = {
-                'in-progress': '#add8e6',
-                'completed': '#b5e7a0',
-                'blocked': '#ffb3b3',
-                '': '#f0f0f0'
-            };
-
-            // Create card for the task
-            const card = await miro.board.createCard({
-                title: data.taskTitle,
-                description: `📅 ${new Date(data.startDate).toLocaleDateString()} - ${new Date(data.endDate).toLocaleDateString()}\n\n${data.notes || ''}`,
-                style: {
-                    cardTheme: phaseColors[data.phase]
-                },
-                x: Math.random() * 500,
-                y: Math.random() * 500,
-                width: 300
-            });
-
-            // Add phase tag
-            await miro.board.createStickyNote({
-                content: `<b>${data.phase.toUpperCase()}</b>`,
-                style: {
-                    fillColor: phaseColors[data.phase]
-                },
-                x: card.x - 200,
-                y: card.y,
-                width: 150,
-                height: 80
-            });
-
-            // Add status if exists
-            if (data.status) {
-                await miro.board.createStickyNote({
-                    content: `<b>${data.status.toUpperCase()}</b>`,
-                    style: {
-                        fillColor: statusColors[data.status]
-                    },
-                    x: card.x + 200,
-                    y: card.y,
-                    width: 150,
-                    height: 80
-                });
-            }
-
-            await miro.board.viewport.zoomTo(card);
-            return true;
-        }
-
-        // Create brief template
-        async function createBriefTemplate(data) {
-            const startX = 0;
-            const startY = 0;
-
-            // Sidebar
-            await miro.board.createShape({
-                content: `<p style="text-align:center; writing-mode: vertical-rl; transform: rotate(180deg);"><b style="font-size:36px; letter-spacing: 6px;">TEMPLATE</b></p>`,
-                shape: 'rectangle',
-                style: {
-                    fillColor: '#1a1a1a',
-                    borderWidth: 0,
-                    color: '#ffffff'
-                },
-                x: startX - 200,
-                y: startY,
-                width: 150,
-                height: 1000
-            });
-
-            // Main template
-            const content = `
-                <div style="padding: 30px; line-height: 1.8;">
-                    <h1 style="font-size: 32px; margin-bottom: 25px; border-bottom: 3px solid #000; padding-bottom: 12px;">${data.projectName}</h1>
-                    
-                    <div style="margin-bottom: 25px;">
-                        <h2 style="font-size: 16px; font-weight: bold; margin-bottom: 8px;">Project Overview / Description</h2>
-                        <p style="font-size: 13px;">• ${data.projectDescription}</p>
-                    </div>
-
-                    <div style="margin-bottom: 25px;">
-                        <h2 style="font-size: 16px; font-weight: bold; margin-bottom: 8px;">Target Audience:</h2>
-                        <p style="font-size: 13px;">${data.targetAudience}</p>
-                    </div>
-
-                    <div style="margin-bottom: 25px;">
-                        <h2 style="font-size: 16px; font-weight: bold; margin-bottom: 8px;">Goals / Objectives:</h2>
-                        <p style="font-size: 13px;">• ${data.objectives}</p>
-                    </div>
-                </div>
-            `;
-
-            const mainCard = await miro.board.createShape({
-                content: content,
-                shape: 'rectangle',
-                style: {
-                    fillColor: '#ffffff',
-                    borderColor: '#000000',
-                    borderWidth: 2
-                },
-                x: startX + 700,
-                y: startY,
-                width: 1200,
-                height: 800
-            });
-
-            // Deliverables card
-            if (data.fileTypes || data.fileSizes || data.numberOfAssets) {
-                const delContent = `
-                    <div style="padding: 25px;">
-                        <h2 style="font-size: 18px; font-weight: bold; margin-bottom: 15px;">Deliverables:</h2>
-                        ${data.fileTypes ? '<p style="font-size: 13px;">• File type(s): ' + data.fileTypes + '</p>' : ''}
-                        ${data.fileSizes ? '<p style="font-size: 13px;">• File sizes / dimensions: ' + data.fileSizes + '</p>' : ''}
-                        ${data.numberOfAssets ? '<p style="font-size: 13px;">• Number of assets: ' + data.numberOfAssets + '</p>' : ''}
-                    </div>
-                `;
-
-                await miro.board.createShape({
-                    content: delContent,
-                    shape: 'rectangle',
-                    style: {
-                        fillColor: '#ffffff',
-                        borderColor: '#000000',
-                        borderWidth: 2
-                    },
-                    x: startX + 700,
-                    y: startY + 600,
-                    width: 1200,
-                    height: 400
-                });
-            }
-
-            // Inspiration card
-            const inspContent = `
-                <div style="padding: 25px;">
-                    <h2 style="font-size: 18px; font-weight: bold; margin-bottom: 12px;">Inspirations / References</h2>
-                    <p style="font-size: 13px;">${data.references || 'Links, screenshots, mood boards, examples of work you like or want to emulate'}</p>
-                </div>
-            `;
-
-            await miro.board.createShape({
-                content: inspContent,
-                shape: 'rectangle',
-                style: {
-                    fillColor: '#ffffff',
-                    borderColor: '#000000',
-                    borderWidth: 2
-                },
-                x: startX + 2100,
-                y: startY,
-                width: 800,
-                height: 400
-            });
-
-            // Upload images
-            if (uploadedFiles.length > 0) {
-                let imgX = startX + 1700;
-                let imgY = startY + 500;
-                
-                for (let i = 0; i < Math.min(uploadedFiles.length, 4); i++) {
-                    await miro.board.createImage({
-                        url: uploadedFiles[i].data,
-                        x: imgX + (i % 2) * 280,
-                        y: imgY + Math.floor(i / 2) * 280,
-                        width: 250
-                    });
-                }
-            }
-
-            await miro.board.viewport.zoomTo(mainCard);
-            return true;
-        }
-
-        // Form handlers
-        document.getElementById('trackerForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const form = e.target;
-            const loading = document.getElementById('loading');
-            const success = document.getElementById('successMsg');
-            const error = document.getElementById('errorMsg');
-
-            form.style.display = 'none';
-            loading.style.display = 'block';
-            success.style.display = 'none';
-            error.style.display = 'none';
-
-            const data = {
-                taskTitle: document.getElementById('taskTitle').value,
-                phase: document.querySelector('input[name="phase"]:checked').value,
-                startDate: document.getElementById('startDate').value,
-                endDate: document.getElementById('endDate').value,
-                status: document.getElementById('status').value,
-                resources: document.getElementById('resources').value,
-                notes: document.getElementById('notes').value
-            };
-
-            try {
-                await addToTracker(data);
-                loading.style.display = 'none';
-                success.style.display = 'block';
-                setTimeout(() => {
-                    form.reset();
-                    form.style.display = 'block';
-                    success.style.display = 'none';
-                    document.querySelector('.phase-option.discover').classList.add('selected');
-                }, 2000);
-            } catch (err) {
-                loading.style.display = 'none';
-                error.style.display = 'block';
-                form.style.display = 'block';
-                setTimeout(() => error.style.display = 'none', 3000);
-            }
-        });
-
-        document.getElementById('briefForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const form = e.target;
-            const loading = document.getElementById('loading');
-            const success = document.getElementById('successMsg');
-            const error = document.getElementById('errorMsg');
-
-            form.style.display = 'none';
-            loading.style.display = 'block';
-            success.style.display = 'none';
-            error.style.display = 'none';
-
-            const data = {
-                projectName: document.getElementById('projectName').value,
-                projectDescription: document.getElementById('projectDescription').value,
-                targetAudience: document.getElementById('targetAudience').value,
-                objectives: document.getElementById('objectives').value,
-                fileTypes: document.getElementById('fileTypes').value,
-                fileSizes: document.getElementById('fileSizes').value,
-                numberOfAssets: document.getElementById('numberOfAssets').value,
-                references: document.getElementById('references').value
-            };
-
-            try {
-                await createBriefTemplate(data);
-                loading.style.display = 'none';
-                success.style.display = 'block';
-                uploadedFiles = [];
-                document.getElementById('filePreview').innerHTML = '';
-                setTimeout(() => {
-                    form.reset();
-                    form.style.display = 'block';
-                    success.style.display = 'none';
-                }, 2000);
-            } catch (err) {
-                loading.style.display = 'none';
-                error.style.display = 'block';
-                form.style.display = 'block';
-                setTimeout(() => error.style.display = 'none', 3000);
-            }
-        });
-
-        initMiro();
-    </script>
+        await miro.board.widgets.create(widgets);
+        alert('✅ Template successfully created on the board!');
+      });
+    });
+  </script>
 </body>
 </html>
