@@ -12,6 +12,15 @@ let isInitialized = false;
 // Inicializar app quando Miro estiver pronto (SDK v2)
 async function init() {
     console.log('🎨 Miro Todoist Sync App iniciado');
+    
+    // Verificar se Miro SDK está disponível
+    if (typeof miro === 'undefined') {
+        console.error('❌ Miro SDK não carregado');
+        updateStatus('❌ Miro SDK não carregado', 'error');
+        return;
+    }
+    
+    console.log('✅ Miro SDK carregado');
     await initializeApp();
 }
 
@@ -25,6 +34,17 @@ if (document.readyState === 'loading') {
 // Inicialização principal
 async function initializeApp() {
     try {
+        // Verificar se estamos em um board
+        try {
+            const boardInfo = await miro.board.getInfo();
+            console.log('✅ Board conectado:', boardInfo.id);
+            updateStatus('✅ Conectado ao board', 'success');
+        } catch (error) {
+            console.error('❌ Erro ao conectar com board:', error);
+            updateStatus('❌ Erro ao conectar com board', 'error');
+            return;
+        }
+        
         await loadConfig();
         setupEventListeners();
         await updateStats();
@@ -46,14 +66,16 @@ async function loadConfig() {
         if (savedConfig) {
             config = { ...config, ...savedConfig };
             
-            // Atualizar interface
-            document.getElementById('todoistToken').value = config.todoistToken || '';
-            document.getElementById('makeWebhookUrl').value = config.makeWebhookUrl || '';
-            document.getElementById('autoSyncEnabled').checked = config.autoSyncEnabled || false;
+            // Atualizar interface com verificação se elementos existem
+            const tokenInput = document.getElementById('todoistToken');
+            const urlInput = document.getElementById('makeWebhookUrl');
+            const autoSyncCheck = document.getElementById('autoSyncEnabled');
+            const projectSelect = document.getElementById('todoistProject');
             
-            if (config.projectId) {
-                document.getElementById('todoistProject').value = config.projectId;
-            }
+            if (tokenInput) tokenInput.value = config.todoistToken || '';
+            if (urlInput) urlInput.value = config.makeWebhookUrl || '';
+            if (autoSyncCheck) autoSyncCheck.checked = config.autoSyncEnabled || false;
+            if (projectSelect && config.projectId) projectSelect.value = config.projectId;
         }
         
         logMessage('Configuração carregada', 'success');
