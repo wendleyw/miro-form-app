@@ -62,8 +62,10 @@ async function initializeApp() {
 // Carregar configuração salva
 async function loadConfig() {
     try {
-        const savedConfig = await miro.board.storage.get('todoistSyncConfig');
-        if (savedConfig) {
+        // Usar localStorage como fallback para SDK v2
+        const savedConfigStr = localStorage.getItem('todoistSyncConfig');
+        if (savedConfigStr) {
+            const savedConfig = JSON.parse(savedConfigStr);
             config = { ...config, ...savedConfig };
             
             // Atualizar interface com verificação se elementos existem
@@ -108,8 +110,8 @@ async function saveConfig() {
             throw new Error('URL do Make.com inválida');
         }
         
-        // Salvar no storage do Miro
-        await miro.board.storage.set('todoistSyncConfig', config);
+        // Salvar no localStorage (SDK v2 compatível)
+        localStorage.setItem('todoistSyncConfig', JSON.stringify(config));
         
         updateStatus('✅ Configuração salva com sucesso', 'success');
         logMessage('Configuração salva', 'success');
@@ -350,11 +352,11 @@ async function sendToMakecom(data) {
     return response.json();
 }
 
-// Gerenciar metadata dos itens
+// Gerenciar metadata dos itens (usando localStorage para SDK v2)
 async function getItemMetadata(itemId) {
     try {
-        const metadata = await miro.board.storage.get(`item_${itemId}`);
-        return metadata || {};
+        const metadataStr = localStorage.getItem(`item_${itemId}`);
+        return metadataStr ? JSON.parse(metadataStr) : {};
     } catch (error) {
         return {};
     }
@@ -364,7 +366,7 @@ async function setItemMetadata(itemId, metadata) {
     try {
         const existing = await getItemMetadata(itemId);
         const updated = { ...existing, ...metadata };
-        await miro.board.storage.set(`item_${itemId}`, updated);
+        localStorage.setItem(`item_${itemId}`, JSON.stringify(updated));
     } catch (error) {
         console.error('Erro ao salvar metadata:', error);
     }
