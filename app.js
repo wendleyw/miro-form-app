@@ -9,11 +9,18 @@ let config = {
 let autoSyncInterval = null;
 let isInitialized = false;
 
-// Inicializar app quando Miro estiver pronto
-miro.onReady(() => {
+// Inicializar app quando Miro estiver pronto (SDK v2)
+async function init() {
     console.log('🎨 Miro Todoist Sync App iniciado');
-    initializeApp();
-});
+    await initializeApp();
+}
+
+// Aguardar o DOM carregar e inicializar
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+} else {
+    init();
+}
 
 // Inicialização principal
 async function initializeApp() {
