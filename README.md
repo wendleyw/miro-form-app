@@ -46,6 +46,7 @@ App interno do Miro para sincronizar sticky notes com tarefas do Todoist usando 
 - `index.html` - Interface do app
 - `style.css` - Estilos visuais
 - `app.js` - Lógica principal
+- `manifest.json` - Configuração do app Miro
 
 ## 🔗 Deploy
 
