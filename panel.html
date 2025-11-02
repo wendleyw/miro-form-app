@@ -141,6 +141,13 @@
                 <option value="sticky_notes">📝 Sticky Notes</option>
             </select>
         </div>
+        <div class="input-group">
+            <label>Frame específico para sincronizar:</label>
+            <select id="specificFrame">
+                <option value="">🌐 Todo o board</option>
+            </select>
+            <button onclick="loadFrames()" style="margin-top: 5px; padding: 5px 10px; font-size: 12px;">🔄 Atualizar Frames</button>
+        </div>
         <button onclick="testToken()">🔍 Testar Token</button>
         <button onclick="saveConfig()">💾 Salvar Configuração</button>
     </div>
@@ -157,8 +164,11 @@
 
     <div class="section">
         <h3>🔄 Sincronização</h3>
-        <button class="btn-sync" onclick="syncToTodoist()">📝 Miro → Todoist</button>
         <button class="btn-sync" onclick="syncFromTodoist()">⬇️ Todoist → Miro</button>
+        <button class="btn-sync" onclick="syncToTodoist()">📤 Miro → Todoist</button>
+        <div style="font-size: 11px; color: #666; margin-top: 8px;">
+            💡 Use "Frame específico" para sincronizar apenas elementos de um frame
+        </div>
     </div>
 
     <div class="section">
@@ -196,6 +206,7 @@
                 
                 await loadConfig();
                 await loadTodoistProjects();
+                await loadFrames();
                 await updateStats();
                 
                 document.getElementById('status').textContent = '✅ Painel pronto para uso';
@@ -222,6 +233,9 @@
                     if (config.elementType) {
                         document.getElementById('miroElementType').value = config.elementType;
                     }
+                    if (config.specificFrame) {
+                        document.getElementById('specificFrame').value = config.specificFrame;
+                    }
                 }
             } catch (error) {
                 console.error('Erro ao carregar configuração:', error);
@@ -235,6 +249,7 @@
                 config.makeWebhookUrl = document.getElementById('makeWebhookUrl').value.trim();
                 config.projectId = document.getElementById('todoistProject').value;
                 config.elementType = document.getElementById('miroElementType').value;
+                config.specificFrame = document.getElementById('specificFrame').value;
                 
                 if (!config.todoistToken) {
                     document.getElementById('status').textContent = '❌ Token do Todoist é obrigatório';
@@ -355,16 +370,41 @@
             }
             
             try {
-                document.getElementById('status').textContent = '🔄 Sincronizando elementos do Miro...';
+                const specificFrameId = document.getElementById('specificFrame').value;
+                
+                if (specificFrameId) {
+                    document.getElementById('status').textContent = `🔄 Sincronizando elementos do frame específico...`;
+                } else {
+                    document.getElementById('status').textContent = '🔄 Sincronizando elementos do Miro...';
+                }
                 document.getElementById('status').className = 'status';
                 
-                // Buscar diferentes tipos de elementos
-                const stickyNotes = await miro.board.get({ type: 'sticky_note' });
-                const frames = await miro.board.get({ type: 'frame' });
-                const texts = await miro.board.get({ type: 'text' });
+                let allItems = [];
                 
-                const allItems = [...stickyNotes, ...frames, ...texts];
-                console.log(`Encontrados ${allItems.length} elementos (${stickyNotes.length} sticky notes, ${frames.length} frames, ${texts.length} textos)`);
+                if (specificFrameId) {
+                    // Buscar elementos apenas dentro do frame específico
+                    try {
+                        const frameElements = await miro.board.get({ 
+                            type: ['sticky_note', 'text', 'frame'],
+                            parentId: specificFrameId 
+                        });
+                        allItems = frameElements;
+                        console.log(`Encontrados ${allItems.length} elementos dentro do frame específico`);
+                    } catch (error) {
+                        console.error('Erro ao buscar elementos do frame:', error);
+                        // Fallback: buscar o frame específico
+                        const specificFrame = await miro.board.getById(specificFrameId);
+                        allItems = [specificFrame];
+                    }
+                } else {
+                    // Buscar todos os elementos do board
+                    const stickyNotes = await miro.board.get({ type: 'sticky_note' });
+                    const frames = await miro.board.get({ type: 'frame' });
+                    const texts = await miro.board.get({ type: 'text' });
+                    
+                    allItems = [...stickyNotes, ...frames, ...texts];
+                    console.log(`Encontrados ${allItems.length} elementos (${stickyNotes.length} sticky notes, ${frames.length} frames, ${texts.length} textos)`);
+                }
                 
                 let syncedCount = 0;
                 
@@ -456,72 +496,83 @@
                 const elementType = document.getElementById('miroElementType').value;
                 
                 if (elementType === 'frames') {
-                    // Criar frame principal para organizar as tarefas
-                    const mainFrame = await miro.board.createFrame({
-                    title: `Tarefas do Todoist - ${new Date().toLocaleDateString()}`,
-                    style: {
-                        fillColor: 'light_blue'
-                    },
-                    x: 0,
-                    y: 0,
-                    width: Math.max(800, Math.ceil(Math.sqrt(tasks.length)) * 200),
-                    height: Math.max(600, Math.ceil(tasks.length / Math.ceil(Math.sqrt(tasks.length))) * 150)
-                });
-                
-                console.log(`📦 Frame principal criado: ${mainFrame.id}`);
-                
-                // Organizar tarefas em grid dentro do frame
-                const itemsPerRow = Math.ceil(Math.sqrt(tasks.length));
-                const itemWidth = 180;
-                const itemHeight = 120;
-                const padding = 20;
-                
-                for (let i = 0; i < tasks.length; i++) {
-                    const task = tasks[i];
-                    try {
-                        const row = Math.floor(i / itemsPerRow);
-                        const col = i % itemsPerRow;
-                        
-                        // Posição dentro do frame principal
-                        const x = padding + (col * (itemWidth + padding));
-                        const y = padding + (row * (itemHeight + padding));
-                        
-                        // Criar frame individual para cada tarefa
-                        const taskFrame = await miro.board.createFrame({
-                            title: task.content,
-                            style: {
-                                fillColor: task.is_completed ? 'light_green' : 'light_yellow'
-                            },
-                            x: x,
-                            y: y,
-                            width: itemWidth,
-                            height: itemHeight,
-                            parentId: mainFrame.id
-                        });
-                        
-                        // Adicionar texto dentro do frame
-                        await miro.board.createText({
-                            content: task.content,
-                            style: {
-                                color: '#1a1a1a',
-                                fontSize: 14,
-                                textAlign: 'center'
-                            },
-                            x: x + itemWidth/2,
-                            y: y + itemHeight/2,
-                            parentId: taskFrame.id
-                        });
-                        
-                        importedCount++;
-                        console.log(`✅ Frame criado: ${task.content}`);
-                        
-                    } catch (itemError) {
-                        console.error('Erro ao criar frame:', itemError);
+                    // Organizar tarefas em grid - sem frame principal aninhado
+                    const itemsPerRow = Math.ceil(Math.sqrt(tasks.length));
+                    const itemWidth = 250;
+                    const itemHeight = 150;
+                    const padding = 30;
+                    
+                    // Posição inicial
+                    const startX = 100;
+                    const startY = 100;
+                    
+                    const createdFrames = [];
+                    
+                    for (let i = 0; i < tasks.length; i++) {
+                        const task = tasks[i];
+                        try {
+                            const row = Math.floor(i / itemsPerRow);
+                            const col = i % itemsPerRow;
+                            
+                            // Posição absoluta no board
+                            const x = startX + (col * (itemWidth + padding));
+                            const y = startY + (row * (itemHeight + padding));
+                            
+                            // Criar frame para cada tarefa com conteúdo visível
+                            const taskFrame = await miro.board.createFrame({
+                                title: `📋 ${task.content}`,
+                                style: {
+                                    fillColor: task.is_completed ? 'light_green' : 'light_yellow'
+                                },
+                                x: x,
+                                y: y,
+                                width: itemWidth,
+                                height: itemHeight
+                            });
+                            
+                            // Adicionar sticky note dentro do frame para melhor visualização
+                            await miro.board.createStickyNote({
+                                content: `${task.content}\n\n${task.is_completed ? '✅ Concluído' : '⏳ Pendente'}`,
+                                style: {
+                                    fillColor: task.is_completed ? 'light_green' : 'light_yellow',
+                                    textAlign: 'center',
+                                    fontSize: 12
+                                },
+                                x: x + itemWidth/2,
+                                y: y + itemHeight/2,
+                                width: itemWidth - 40,
+                                height: itemHeight - 40,
+                                parentId: taskFrame.id
+                            });
+                            
+                            // Adicionar informações extras se disponíveis
+                            if (task.description || task.due) {
+                                await miro.board.createText({
+                                    content: `${task.due ? '📅 ' + new Date(task.due.date).toLocaleDateString() : ''}\n${task.description ? '📝 ' + task.description.substring(0, 50) + '...' : ''}`,
+                                    style: {
+                                        color: '#666666',
+                                        fontSize: 10,
+                                        textAlign: 'left'
+                                    },
+                                    x: x + 20,
+                                    y: y + itemHeight - 30,
+                                    parentId: taskFrame.id
+                                });
+                            }
+                            
+                            createdFrames.push(taskFrame);
+                            importedCount++;
+                            console.log(`✅ Frame criado: ${task.content}`);
+                            
+                        } catch (itemError) {
+                            console.error('Erro ao criar frame:', itemError);
+                        }
                     }
-                }
-                
-                    // Centralizar a visualização no frame principal
-                    await miro.board.viewport.zoomTo(mainFrame);
+                    
+                    // Centralizar visualização em todos os frames criados
+                    if (createdFrames.length > 0) {
+                        await miro.board.viewport.zoomTo(createdFrames);
+                    }
                     
                 } else {
                     // Criar sticky notes organizados em grid
@@ -608,6 +659,33 @@
                 
             } catch (error) {
                 console.error('Erro ao atualizar stats:', error);
+            }
+        }
+
+        // Carregar frames disponíveis no board
+        async function loadFrames() {
+            try {
+                const frames = await miro.board.get({ type: 'frame' });
+                const select = document.getElementById('specificFrame');
+                
+                // Limpar opções existentes (exceto "Todo o board")
+                select.innerHTML = '<option value="">🌐 Todo o board</option>';
+                
+                frames.forEach(frame => {
+                    const option = document.createElement('option');
+                    option.value = frame.id;
+                    option.textContent = `📦 ${frame.title || 'Frame sem título'}`;
+                    select.appendChild(option);
+                });
+                
+                console.log(`${frames.length} frames encontrados no board`);
+                document.getElementById('status').textContent = `✅ ${frames.length} frames carregados`;
+                document.getElementById('status').className = 'status';
+                
+            } catch (error) {
+                console.error('Erro ao carregar frames:', error);
+                document.getElementById('status').textContent = '❌ Erro ao carregar frames';
+                document.getElementById('status').className = 'status error';
             }
         }
 
