@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Miro SDK Test</title>
+    <script src="https://miro.com/app/static/sdk/v2/miro.js"></script>
+</head>
+<body>
+    <h1>Miro SDK Test</h1>
+    <div id="status">Carregando...</div>
+    
+    <script>
+        console.log('Testando Miro SDK...');
+        console.log('Miro object:', typeof miro);
+        
+        document.getElementById('status').textContent = 'Miro SDK: ' + (typeof miro !== 'undefined' ? 'Carregado' : 'Não carregado');
+        
+        if (typeof miro !== 'undefined') {
+            console.log('Miro board:', miro.board);
+            console.log('Miro storage:', miro.board?.storage);
+            
+            // Teste básico
+            miro.board.getInfo().then(info => {
+                console.log('Board info:', info);
+                document.getElementById('status').textContent += ' - Board ID: ' + info.id;
+            }).catch(error => {
+                console.error('Erro ao obter info do board:', error);
+                document.getElementById('status').textContent += ' - Erro: ' + error.message;
+            });
+        }
+    </script>
+</body>
+</html>

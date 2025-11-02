@@ -1,0 +1,8 @@
+{
+  "appName": "Todoist Sync Simple",
+  "sdkVersion": "SDK_V2",
+  "scopes": [
+    "boards:read",
+    "boards:write"
+  ]
+}

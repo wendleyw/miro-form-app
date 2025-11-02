@@ -110,3 +110,6 @@ dump.rdb
 # File uploads
 uploads/
 attachments/
+
+# Vercel
+.vercel

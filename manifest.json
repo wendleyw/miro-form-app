@@ -1,0 +1,13 @@
+{
+  "appName": "Todoist Sync",
+  "sdkVersion": "SDK_V2",
+  "appId": "3458764568088088064",
+  "miroDeveloperTeam": "3458764568088088063",
+  "scopes": [
+    "boards:read",
+    "boards:write"
+  ],
+  "allowedDomains": [
+    "https://wendleyw.github.io"
+  ]
+}

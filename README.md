@@ -1,125 +1,146 @@
-# Ticket Management System
+# 🏢 Agency Management - Miro Todoist Sync Platform
 
-An integrated platform that enables clients to submit design work requests through a web application, automatically generates organized project structures in Miro for creative work, and synchronizes tasks with Todoist for project management.
+Uma plataforma completa para gerenciamento de projetos de agência, integrando Miro e Todoist com sincronização inteligente e organizada.
 
-## Project Structure
+## 🚀 Funcionalidades Principais
+
+### 🎯 **Agency Management Panel**
+- ✅ **Sincronização Seletiva** - Escolha exatamente o que sincronizar
+- ✅ **Organização Visual** - Layout em grid configurável para apresentações
+- ✅ **Controle por Projeto** - Um projeto Todoist = Um cliente
+- ✅ **Interface Profissional** - Design focado em agências
+
+### 🔄 **Sincronização Inteligente**
+- **Miro → Todoist**: Elementos selecionados, frames específicos ou board completo
+- **Todoist → Miro**: Importação organizada em grid visual
+- **Status Visual**: Cores indicam progresso (verde=concluído, amarelo=pendente)
+- **Progresso em Tempo Real**: Barras de progresso e feedback detalhado
+
+### 🎨 **Modos de Sincronização**
+1. **🎯 Apenas Selecionados**: Ctrl+clique nos elementos desejados
+2. **📦 Frame Específico**: Sincroniza todos os elementos de um frame
+3. **🌐 Todo o Board**: Sincronização completa tradicional
+
+## 📁 Estrutura do Projeto
 
 ```
-ticket-management-system/
-├── client/          # Next.js frontend application
-├── server/          # Express.js backend API
-├── .kiro/           # Kiro specifications and configuration
-└── package.json     # Root workspace configuration
+agency-management-platform/
+├── miro-form-app/           # App Miro com painel melhorado
+│   ├── panel.html          # Painel principal (Agency Management)
+│   ├── AGENCY-MANAGEMENT-GUIDE.md  # Guia completo de uso
+│   └── TROUBLESHOOTING-TODOIST.md  # Troubleshooting
+├── server/                  # Backend completo (futuro)
+├── client/                  # Frontend Next.js (futuro)
+└── .kiro/                  # Especificações e configurações
 ```
 
-## Prerequisites
+## 🚀 Como Usar
 
-- Node.js 20+
-- PostgreSQL database
-- Redis server
-- npm or yarn
+### 1. **Configuração Inicial**
+1. Cole seu **Token Todoist** (obtido em todoist.com/prefs/integrations)
+2. Clique **"🔍 Testar Token"** para validar
+3. Selecione um **Projeto** específico
+4. Use **"🐛 Debug Projeto"** para verificar
+5. **"💾 Salvar Configuração"**
 
-## Setup Instructions
+### 2. **Importar Projeto Organizado (Todoist → Miro)**
+1. Ajuste o **grid** (colunas: 4, largura: 280px, altura: 180px)
+2. Clique **"⬇️ Importar Projeto Organizado"**
+3. Tarefas aparecem organizadas visualmente
+4. Cores automáticas por status
 
-### 1. Clone and Install Dependencies
+### 3. **Sincronização Seletiva (Miro → Todoist)**
+1. **Selecione elementos** no Miro (Ctrl+clique múltiplos)
+2. Escolha **"🎯 Apenas Selecionados"**
+3. Clique **"📤 Sincronizar Selecionados"**
+4. Apenas os elementos escolhidos viram tarefas
 
-```bash
-# Install root dependencies
-npm install
+## 🏢 Workflow para Agência
 
-# Install all workspace dependencies
-npm run install:all
-```
+### **Organização Recomendada**
+- **1 Projeto Todoist = 1 Cliente**
+- **Frames no Miro = Fases do projeto**
+- **Cores = Prioridades/Status**
+- **Grid organizado = Apresentações profissionais**
 
-### 2. Environment Configuration
+### **Processo Típico**
+1. **Brainstorm** → Sticky notes livres no Miro
+2. **Organizar** → Agrupar em frames por categoria
+3. **Sincronizar** → Frame por frame para Todoist
+4. **Acompanhar** → Progresso no Todoist
+5. **Apresentar** → Reimportar organizado para cliente
 
-```bash
-# Copy environment template
-cp server/.env.example server/.env
+## 🔧 Configurações Avançadas
 
-# Edit server/.env with your configuration:
-# - DATABASE_URL: PostgreSQL connection string
-# - JWT_SECRET: Secret key for JWT tokens
-# - REDIS_HOST/PORT: Redis server configuration
-# - MIRO_CLIENT_ID/SECRET: Miro app credentials
-# - TODOIST_API_TOKEN: Todoist API token
-```
+### **Grid Layout**
+- **Colunas**: 2-8 (recomendado: 4-5 para apresentações)
+- **Largura**: 200-400px (280px ideal para legibilidade)
+- **Altura**: 120-300px (180px balanceado)
 
-### 3. Database Setup
+### **Ferramentas de Gestão**
+- **🧹 Limpar Board**: Remove todos os elementos (cuidado!)
+- **📐 Organizar Elementos**: Reorganiza automaticamente em grid
+- **📊 Estatísticas**: Contadores em tempo real
 
-```bash
-# Generate Prisma client
-npm run db:generate
+## 🎯 URLs e Deploy
 
-# Run database migrations
-npm run db:migrate
+### **GitHub Pages (Ativo)**
+- **URL do App**: `https://wendleyw.github.io/miro-form-app/`
+- **Repositório**: `https://github.com/wendleyw/miro-form-app`
 
-# (Optional) Open Prisma Studio
-npm run db:studio
-```
+### **Instalar no Miro**
+1. Acesse https://developers.miro.com/
+2. "Create new app"
+3. Configure:
+   - **App URL**: `https://wendleyw.github.io/miro-form-app/`
+   - **Permissions**: boards:read, boards:write
+4. Instale no board da agência
 
-### 4. Start Development Servers
+## 🛠️ Stack Tecnológico
 
-```bash
-# Start both client and server in development mode
-npm run dev
+### **Atual (Miro App)**
+- **Frontend**: HTML5, CSS3, JavaScript ES6+
+- **Integração**: Miro SDK v2, Todoist REST API
+- **Deploy**: GitHub Pages
+- **Interface**: Responsive, mobile-friendly
 
-# Or start individually:
-npm run dev:server  # Backend on http://localhost:3001
-npm run dev:client  # Frontend on http://localhost:3000
-```
+### **Futuro (Plataforma Completa)**
+- **Frontend**: Next.js 14 + TypeScript
+- **Backend**: Node.js + Express + Prisma
+- **Database**: PostgreSQL + Redis
+- **Integrações**: Miro SDK, Todoist MCP, Webhooks
 
-## Available Scripts
+## 📚 Documentação
 
-- `npm run dev` - Start both client and server in development mode
-- `npm run build` - Build both applications for production
-- `npm run start` - Start both applications in production mode
-- `npm run db:generate` - Generate Prisma client
-- `npm run db:migrate` - Run database migrations
-- `npm run db:studio` - Open Prisma Studio
-- `npm run db:reset` - Reset database and run migrations
+- **[Agency Management Guide](miro-form-app/AGENCY-MANAGEMENT-GUIDE.md)** - Guia completo de uso
+- **[Troubleshooting](miro-form-app/TROUBLESHOOTING-TODOIST.md)** - Resolução de problemas
+- **[Architecture](miro-form-app/ARCHITECTURE.md)** - Arquitetura técnica
 
-## Technology Stack
+## 🎉 Melhorias Implementadas
 
-### Frontend (Client)
-- Next.js 14 with TypeScript
-- Tailwind CSS for styling
-- React Hook Form for form management
-- TanStack Query for data fetching
-- Zustand for state management
+### ✅ **Problemas Resolvidos**
+- ❌ Erro de criação de frames (width/height conflict)
+- ❌ Importação de todos os projetos (agora filtra corretamente)
+- ❌ Sincronização descontrolada (agora seletiva)
+- ❌ Layout desorganizado (grid configurável)
+- ❌ Interface básica (design profissional para agência)
 
-### Backend (Server)
-- Node.js with Express.js
-- TypeScript for type safety
-- Prisma ORM with PostgreSQL
-- Bull Queue with Redis for job processing
-- JWT for authentication
+### 🚀 **Novas Funcionalidades**
+- 🎯 Sincronização seletiva por elementos
+- 📦 Sincronização por frames específicos
+- 📊 Progresso visual em tempo real
+- 🎨 Grid configurável para apresentações
+- 🏢 Interface focada em gestão de agência
+- 🧹 Ferramentas de limpeza e organização
 
-### Integrations
-- Miro SDK for board management
-- Todoist API via MCP server
-- Webhook endpoints for real-time sync
+## 📈 Próximos Passos
 
-## Development Workflow
+1. **Feedback e Ajustes** - Testar com projetos reais da agência
+2. **Automação** - Webhooks para sincronização automática
+3. **Relatórios** - Dashboard de progresso de projetos
+4. **Clientes** - Portal para clientes acompanharem projetos
+5. **Integrações** - Slack, email, calendário
 
-1. **Requirements**: Defined in `.kiro/specs/ticket-management-system/requirements.md`
-2. **Design**: Documented in `.kiro/specs/ticket-management-system/design.md`
-3. **Tasks**: Implementation plan in `.kiro/specs/ticket-management-system/tasks.md`
+---
 
-## Next Steps
-
-After completing the project setup, continue with the implementation tasks:
-
-1. Implement database models and core data layer
-2. Build authentication and client management system
-3. Develop core ticket management service
-4. Implement Miro integration service
-5. Create Todoist MCP server integration
-6. Develop bidirectional synchronization engine
-7. Build client portal frontend
-8. Create API endpoints and routing
-9. Integrate all components and implement end-to-end flows
-
-## Support
-
-For development questions and issues, refer to the specification documents in the `.kiro/specs/` directory.
+**🏢 Plataforma profissional para gestão visual de projetos de agência com Miro e Todoist!**
