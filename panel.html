@@ -384,17 +384,37 @@
                 if (specificFrameId) {
                     // Buscar elementos apenas dentro do frame específico
                     try {
-                        const frameElements = await miro.board.get({ 
-                            type: ['sticky_note', 'text', 'frame'],
-                            parentId: specificFrameId 
+                        // Primeiro, buscar o frame específico
+                        const specificFrame = await miro.board.getById(specificFrameId);
+                        
+                        // Buscar todos os elementos do board
+                        const allBoardItems = await miro.board.get({ 
+                            type: ['sticky_note', 'text', 'frame']
                         });
+                        
+                        // Filtrar elementos que estão dentro da área do frame
+                        const frameElements = allBoardItems.filter(item => {
+                            if (item.id === specificFrameId) return true; // Incluir o próprio frame
+                            
+                            // Verificar se o elemento está dentro da área do frame
+                            return item.x >= specificFrame.x && 
+                                   item.x <= (specificFrame.x + specificFrame.width) &&
+                                   item.y >= specificFrame.y && 
+                                   item.y <= (specificFrame.y + specificFrame.height);
+                        });
+                        
                         allItems = frameElements;
-                        console.log(`Encontrados ${allItems.length} elementos dentro do frame específico`);
+                        console.log(`Encontrados ${allItems.length} elementos dentro/próximos ao frame específico`);
                     } catch (error) {
                         console.error('Erro ao buscar elementos do frame:', error);
-                        // Fallback: buscar o frame específico
-                        const specificFrame = await miro.board.getById(specificFrameId);
-                        allItems = [specificFrame];
+                        // Fallback: buscar apenas o frame específico
+                        try {
+                            const specificFrame = await miro.board.getById(specificFrameId);
+                            allItems = [specificFrame];
+                        } catch (fallbackError) {
+                            console.error('Erro no fallback:', fallbackError);
+                            allItems = [];
+                        }
                     }
                 } else {
                     // Buscar todos os elementos do board
@@ -440,7 +460,14 @@
                             syncedCount++;
                             console.log(`✅ Tarefa criada: ${content}`);
                         } else {
-                            console.error(`❌ Erro ao criar tarefa: ${content}`, response.status);
+                            const errorText = await response.text();
+                            console.error(`❌ Erro ao criar tarefa: ${content}`, response.status, errorText);
+                            
+                            if (response.status === 403) {
+                                document.getElementById('status').textContent = '❌ Erro 403: Verifique permissões do token Todoist';
+                                document.getElementById('status').className = 'status error';
+                                break; // Parar o loop se houver erro de permissão
+                            }
                         }
                         
                     } catch (itemError) {
@@ -488,8 +515,16 @@
                     throw new Error(`Erro ao buscar tarefas: ${response.status}`);
                 }
                 
-                const tasks = await response.json();
-                console.log(`Encontradas ${tasks.length} tarefas no Todoist`);
+                const allTasks = await response.json();
+                
+                // Limitar a 50 tarefas para evitar sobrecarga
+                const tasks = allTasks.slice(0, 50);
+                console.log(`Encontradas ${allTasks.length} tarefas no Todoist, processando ${tasks.length}`);
+                
+                if (allTasks.length > 50) {
+                    document.getElementById('status').textContent = `⚠️ Processando ${tasks.length} de ${allTasks.length} tarefas (limite aplicado)`;
+                    document.getElementById('status').className = 'status';
+                }
                 
                 let importedCount = 0;
                 
@@ -530,7 +565,7 @@
                                 height: itemHeight
                             });
                             
-                            // Adicionar sticky note dentro do frame para melhor visualização
+                            // Adicionar sticky note próximo ao frame para melhor visualização
                             await miro.board.createStickyNote({
                                 content: `${task.content}\n\n${task.is_completed ? '✅ Concluído' : '⏳ Pendente'}`,
                                 style: {
@@ -538,11 +573,10 @@
                                     textAlign: 'center',
                                     fontSize: 12
                                 },
-                                x: x + itemWidth/2,
-                                y: y + itemHeight/2,
-                                width: itemWidth - 40,
-                                height: itemHeight - 40,
-                                parentId: taskFrame.id
+                                x: x + 10,
+                                y: y + 10,
+                                width: itemWidth - 20,
+                                height: itemHeight - 60
                             });
                             
                             // Adicionar informações extras se disponíveis
@@ -555,8 +589,7 @@
                                         textAlign: 'left'
                                     },
                                     x: x + 20,
-                                    y: y + itemHeight - 30,
-                                    parentId: taskFrame.id
+                                    y: y + itemHeight - 30
                                 });
                             }
                             
