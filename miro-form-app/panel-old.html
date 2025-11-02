@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todoist Sync Panel</title>
+    <script src="https://miro.com/app/static/sdk/v2/miro.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 16px;
+            background: #f8f9fa;
+            color: #333;
+            height: 100vh;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+        .header {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .header h2 {
+            margin: 0;
+            color: #2c3e50;
+            font-size: 18px;
+        }
+        .section {
+            background: white;
+            margin-bottom: 16px;
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .section h3 {
+            margin: 0 0 12px 0;
+            font-size: 14px;
+            color: #495057;
+        }
+        .input-group {
+            margin-bottom: 12px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 12px;
+            color: #6c757d;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 4px 0;
+        }
+        button:hover {
+            background: #0052a3;
+        }
+        .btn-sync {
+            background: #28a745;
+        }
+        .btn-sync:hover {
+            background: #218838;
+        }
+        .status {
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin: 8px 0;
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            text-align: center;
+        }
+        .stat {
+            flex: 1;
+            padding: 8px;
+        }
+        .stat-number {
+            font-size: 18px;
+            font-weight: bold;
+            color: #0066cc;
+        }
+        .stat-label {
+            font-size: 10px;
+            color: #6c757d;
+        }
+        .container {
+            max-height: 100vh;
+            overflow-y: auto;
+            padding-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>🔄 Todoist Sync</h2>
+        </div>
+        
+        <div class="section">
+        <h3>⚙️ Configuração</h3>
+        <div class="input-group">
+            <label>Token Todoist:</label>
+            <input type="password" id="todoistToken" placeholder="Cole seu token aqui">
+        </div>
+        <div class="input-group">
+            <label>URL Make.com:</label>
+            <input type="url" id="makeWebhookUrl" placeholder="https://hook.eu1.make.com/...">
+        </div>
+        <div class="input-group">
+            <label>Projeto Todoist:</label>
+            <select id="todoistProject">
+                <option value="">Selecione um projeto</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label>Tipo de elemento no Miro:</label>
+            <select id="miroElementType">
+                <option value="frames">📦 Frames (Recomendado)</option>
+                <option value="sticky_notes">📝 Sticky Notes</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label>Frame específico para sincronizar:</label>
+            <select id="specificFrame">
+                <option value="">🌐 Todo o board</option>
+            </select>
+            <button onclick="loadFrames()" style="margin-top: 5px; padding: 5px 10px; font-size: 12px;">🔄 Atualizar Frames</button>
+        </div>
+        <button onclick="testToken()">🔍 Testar Token</button>
+        <button onclick="debugProject()">🐛 Debug Projeto</button>
+        <button onclick="saveConfig()">💾 Salvar Configuração</button>
+    </div>
+
+    <div class="section">
+        <h3>🔑 Como obter o Token Todoist</h3>
+        <div style="font-size: 12px; color: #6c757d; line-height: 1.4;">
+            1. Acesse <a href="https://todoist.com/prefs/integrations" target="_blank" style="color: #0066cc;">todoist.com/prefs/integrations</a><br>
+            2. Role até "API token"<br>
+            3. Copie o token e cole acima<br>
+            4. Clique "Salvar Configuração"
+        </div>
+    </div>
+
+    <div class="section">
+        <h3>🔄 Sincronização</h3>
+        <button class="btn-sync" onclick="syncFromTodoist()">⬇️ Todoist → Miro</button>
+        <button class="btn-sync" onclick="syncToTodoist()">📤 Miro → Todoist</button>
+        <div style="font-size: 11px; color: #666; margin-top: 8px;">
+            💡 Use "Frame específico" para sincronizar apenas elementos de um frame
+        </div>
+    </div>
+
+    <div class="section">
+        <h3>📊 Estatísticas</h3>
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-number" id="miroCount">0</div>
+                <div class="stat-label">Sticky Notes</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number" id="todoistCount">0</div>
+                <div class="stat-label">Tarefas</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number" id="syncedCount">0</div>
+                <div class="stat-label">Sincronizados</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="status" class="status">Painel carregado com sucesso!</div>
+
+    <script>
+        // Configuração
+        let config = {
+            todoistToken: '',
+            makeWebhookUrl: '',
+            projectId: null
+        };
+
+        // Inicialização
+        async function init() {
+            try {
+                console.log('🎨 Iniciando painel Todoist Sync');
+                
+                await loadConfig();
+                await loadTodoistProjects();
+                await loadFrames();
+                await updateStats();
+                
+                document.getElementById('status').textContent = '✅ Painel pronto para uso';
+                
+            } catch (error) {
+                console.error('Erro na inicialização:', error);
+                document.getElementById('status').textContent = '❌ Erro na inicialização';
+                document.getElementById('status').className = 'status error';
+            }
+        }
+
+        // Carregar configuração
+        async function loadConfig() {
+            try {
+                const savedConfig = localStorage.getItem('todoistSyncConfig');
+                if (savedConfig) {
+                    config = { ...config, ...JSON.parse(savedConfig) };
+                    
+                    document.getElementById('todoistToken').value = config.todoistToken || '';
+                    document.getElementById('makeWebhookUrl').value = config.makeWebhookUrl || '';
+                    if (config.projectId) {
+                        document.getElementById('todoistProject').value = config.projectId;
+                    }
+                    if (config.elementType) {
+                        document.getElementById('miroElementType').value = config.elementType;
+                    }
+                    if (config.specificFrame) {
+                        document.getElementById('specificFrame').value = config.specificFrame;
+                    }
+                }
+            } catch (error) {
+                console.error('Erro ao carregar configuração:', error);
+            }
+        }
+
+        // Salvar configuração
+        async function saveConfig() {
+            try {
+                config.todoistToken = document.getElementById('todoistToken').value.trim();
+                config.makeWebhookUrl = document.getElementById('makeWebhookUrl').value.trim();
+                config.projectId = document.getElementById('todoistProject').value;
+                config.elementType = document.getElementById('miroElementType').value;
+                config.specificFrame = document.getElementById('specificFrame').value;
+                
+                if (!config.todoistToken) {
+                    document.getElementById('status').textContent = '❌ Token do Todoist é obrigatório';
+                    document.getElementById('status').className = 'status error';
+                    return;
+                }
+                
+                localStorage.setItem('todoistSyncConfig', JSON.stringify(config));
+                document.getElementById('status').textContent = '✅ Configuração salva';
+                document.getElementById('status').className = 'status';
+                
+                await loadTodoistProjects();
+                
+            } catch (error) {
+                console.error('Erro ao salvar:', error);
+                document.getElementById('status').textContent = '❌ Erro ao salvar configuração';
+                document.getElementById('status').className = 'status error';
+            }
+        }
+
+        // Testar token
+        async function testToken() {
+            const token = document.getElementById('todoistToken').value.trim();
+            
+            if (!token) {
+                document.getElementById('status').textContent = '❌ Digite um token primeiro';
+                document.getElementById('status').className = 'status error';
+                return;
+            }
+            
+            try {
+                document.getElementById('status').textContent = '🔍 Testando token...';
+                document.getElementById('status').className = 'status';
+                
+                // Primeiro, testar acesso básico
+                const response = await fetch('https://api.todoist.com/rest/v2/projects', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const projects = await response.json();
+                    console.log('🔍 Projetos encontrados:', projects);
+                    
+                    // Testar criação de tarefa em um projeto (se houver)
+                    if (projects.length > 0) {
+                        const testProject = projects[0];
+                        console.log(`🧪 Testando criação de tarefa no projeto: ${testProject.name} (ID: ${testProject.id})`);
+                        
+                        const testTaskResponse = await fetch('https://api.todoist.com/rest/v2/tasks', {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                content: '🧪 Teste de conexão - pode deletar',
+                                project_id: testProject.id,
+                                description: 'Tarefa de teste criada pelo Miro App'
+                            })
+                        });
+                        
+                        if (testTaskResponse.ok) {
+                            const testTask = await testTaskResponse.json();
+                            console.log('✅ Tarefa de teste criada:', testTask);
+                            
+                            // Deletar a tarefa de teste
+                            await fetch(`https://api.todoist.com/rest/v2/tasks/${testTask.id}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'Authorization': `Bearer ${token}`
+                                }
+                            });
+                            
+                            document.getElementById('status').textContent = `✅ Token válido! ${projects.length} projetos encontrados. Permissões OK.`;
+                            document.getElementById('status').className = 'status';
+                        } else {
+                            const errorText = await testTaskResponse.text();
+                            console.error('❌ Erro ao testar criação de tarefa:', testTaskResponse.status, errorText);
+                            document.getElementById('status').textContent = `⚠️ Token válido mas sem permissão para criar tarefas (${testTaskResponse.status})`;
+                            document.getElementById('status').className = 'status error';
+                        }
+                    } else {
+                        document.getElementById('status').textContent = `✅ Token válido! Mas nenhum projeto encontrado.`;
+                        document.getElementById('status').className = 'status';
+                    }
+                } else if (response.status === 401) {
+                    const errorText = await response.text();
+                    console.error('❌ Token inválido:', errorText);
+                    document.getElementById('status').textContent = '❌ Token inválido. Verifique as instruções acima.';
+                    document.getElementById('status').className = 'status error';
+                } else {
+                    const errorText = await response.text();
+                    console.error(`❌ Erro HTTP ${response.status}:`, errorText);
+                    document.getElementById('status').textContent = `❌ Erro: HTTP ${response.status}`;
+                    document.getElementById('status').className = 'status error';
+                }
+                
+            } catch (error) {
+                console.error('Erro ao testar token:', error);
+                document.getElementById('status').textContent = '❌ Erro de conexão';
+                document.getElementById('status').className = 'status error';
+            }
+        }
+
+        // Carregar projetos do Todoist
+        async function loadTodoistProjects() {
+            if (!config.todoistToken) return;
+            
+            try {
+                const response = await fetch('https://api.todoist.com/rest/v2/projects', {
+                    headers: {
+                        'Authorization': `Bearer ${config.todoistToken}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        document.getElementById('status').textContent = '❌ Token inválido. Verifique as instruções acima para obter um novo token.';
+                        document.getElementById('status').className = 'status error';
+                        return;
+                    }
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const projects = await response.json();
+                const select = document.getElementById('todoistProject');
+                
+                select.innerHTML = '<option value="">Selecione um projeto</option>';
+                projects.forEach(project => {
+                    const option = document.createElement('option');
+                    option.value = project.id;
+                    option.textContent = project.name;
+                    select.appendChild(option);
+                });
+                
+                if (config.projectId) {
+                    select.value = config.projectId;
+                }
+                
+                console.log(`${projects.length} projetos carregados`);
+                document.getElementById('status').textContent = `✅ ${projects.length} projetos carregados`;
+                document.getElementById('status').className = 'status';
+                
+            } catch (error) {
+                console.error('Erro ao carregar projetos:', error);
+                document.getElementById('status').textContent = '❌ Erro ao carregar projetos do Todoist';
+                document.getElementById('status').className = 'status error';
+            }
+        }
+
+        // Sincronizar para Todoist
+        async function syncToTodoist() {
+            if (!config.todoistToken) {
+                document.getElementById('status').textContent = '❌ Configure token primeiro';
+                document.getElementById('status').className = 'status error';
+                return;
+            }
+            
+            const selectedProjectId = document.getElementById('todoistProject').value;
+            if (!selectedProjectId) {
+                document.getElementById('status').textContent = '❌ Selecione um projeto primeiro';
+                document.getElementById('status').className = 'status error';
+                return;
+            }
+            
+            try {
+                const specificFrameId = document.getElementById('specificFrame').value;
+                
+                if (specificFrameId) {
+                    document.getElementById('status').textContent = `🔄 Sincronizando elementos do frame específico...`;
+                } else {
+                    document.getElementById('status').textContent = '🔄 Sincronizando elementos do Miro...';
+                }
+                document.getElementById('status').className = 'status';
+                
+                let allItems = [];
+                
+                if (specificFrameId) {
+                    // Buscar elementos apenas dentro do frame específico
+                    try {
+                        // Primeiro, buscar o frame específico
+                        const specificFrame = await miro.board.getById(specificFrameId);
+                        
+                        // Buscar todos os elementos do board
+                        const allBoardItems = await miro.board.get({ 
+                            type: ['sticky_note', 'text', 'frame']
+                        });
+                        
+                        // Filtrar elementos que estão dentro da área do frame
+                        const frameElements = allBoardItems.filter(item => {
+                            if (item.id === specificFrameId) return true; // Incluir o próprio frame
+                            
+                            // Verificar se o elemento está dentro da área do frame
+                            return item.x >= specificFrame.x && 
+                                   item.x <= (specificFrame.x + specificFrame.width) &&
+                                   item.y >= specificFrame.y && 
+                                   item.y <= (specificFrame.y + specificFrame.height);
+                        });
+                        
+                        allItems = frameElements;
+                        console.log(`Encontrados ${allItems.length} elementos dentro/próximos ao frame específico`);
+                    } catch (error) {
+                        console.error('Erro ao buscar elementos do frame:', error);
+                        // Fallback: buscar apenas o frame específico
+                        try {
+                            const specificFrame = await miro.board.getById(specificFrameId);
+                            allItems = [specificFrame];
+                        } catch (fallbackError) {
+                            console.error('Erro no fallback:', fallbackError);
+                            allItems = [];
+                        }
+                    }
+                } else {
+                    // Buscar todos os elementos do board
+                    const stickyNotes = await miro.board.get({ type: 'sticky_note' });
+                    const frames = await miro.board.get({ type: 'frame' });
+                    const texts = await miro.board.get({ type: 'text' });
+                    
+                    allItems = [...stickyNotes, ...frames, ...texts];
+                    console.log(`Encontrados ${allItems.length} elementos (${stickyNotes.length} sticky notes, ${frames.length} frames, ${texts.length} textos)`);
+                }
+                
+                let syncedCount = 0;
+                
+                for (const item of allItems) {
+                    try {
+                        // Extrair conteúdo baseado no tipo
+                        let content = '';
+                        if (item.type === 'sticky_note') {
+                            content = item.content || 'Sticky Note do Miro';
+                        } else if (item.type === 'frame') {
+                            content = item.title || 'Frame do Miro';
+                        } else if (item.type === 'text') {
+                            content = item.content || 'Texto do Miro';
+                        }
+                        
+                        // Limpar e validar conteúdo
+                        content = content.replace(/<[^>]*>/g, '').trim(); // Remove HTML tags
+                        if (!content || content.length < 3) {
+                            content = `📋 ${item.type === 'frame' ? 'Frame' : item.type === 'sticky_note' ? 'Sticky Note' : 'Texto'} do Miro`;
+                        }
+                        
+                        // Limitar tamanho do conteúdo
+                        if (content.length > 500) {
+                            content = content.substring(0, 497) + '...';
+                        }
+                        
+                        // Criar tarefa no Todoist
+                        const taskData = {
+                            content: content,
+                            project_id: selectedProjectId,
+                            description: `Criado do Miro - Tipo: ${item.type} - ID: ${item.id}`,
+                            priority: 1
+                        };
+                        
+                        console.log(`🔄 Criando tarefa: "${content}" no projeto ${selectedProjectId}`);
+                        
+                        const response = await fetch('https://api.todoist.com/rest/v2/tasks', {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${config.todoistToken}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(taskData)
+                        });
+                        
+                        if (response.ok) {
+                            const createdTask = await response.json();
+                            syncedCount++;
+                            console.log(`✅ Tarefa criada: ${content} (ID: ${createdTask.id})`);
+                        } else {
+                            const errorText = await response.text();
+                            console.error(`❌ Erro ao criar tarefa: ${content}`, response.status, errorText);
+                            
+                            if (response.status === 403) {
+                                document.getElementById('status').textContent = '❌ Erro 403: Token sem permissão para criar tarefas neste projeto';
+                                document.getElementById('status').className = 'status error';
+                                break; // Parar o loop se houver erro de permissão
+                            } else if (response.status === 401) {
+                                document.getElementById('status').textContent = '❌ Erro 401: Token inválido ou expirado';
+                                document.getElementById('status').className = 'status error';
+                                break;
+                            } else if (response.status === 429) {
+                                document.getElementById('status').textContent = '❌ Erro 429: Muitas requisições. Aguarde um momento.';
+                                document.getElementById('status').className = 'status error';
+                                break;
+                            }
+                        }
+                        
+                        // Pequena pausa para evitar rate limiting
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                        
+                    } catch (itemError) {
+                        console.error('Erro ao processar item:', itemError);
+                    }
+                }
+                
+                document.getElementById('status').textContent = `✅ ${syncedCount}/${allItems.length} elementos sincronizados para o Todoist`;
+                document.getElementById('status').className = 'status';
+                await updateStats();
+                
+            } catch (error) {
+                console.error('Erro na sincronização:', error);
+                document.getElementById('status').textContent = '❌ Erro na sincronização';
+                document.getElementById('status').className = 'status error';
+            }
+        }
+
+        // Sincronizar do Todoist
+        async function syncFromTodoist() {
+            if (!config.todoistToken) {
+                document.getElementById('status').textContent = '❌ Configure token primeiro';
+                document.getElementById('status').className = 'status error';
+                return;
+            }
+            
+            const selectedProjectId = document.getElementById('todoistProject').value;
+            if (!selectedProjectId) {
+                document.getElementById('status').textContent = '❌ Selecione um projeto primeiro';
+                document.getElementById('status').className = 'status error';
+                return;
+            }
+            
+            try {
+                document.getElementById('status').textContent = '⬇️ Importando tarefas do Todoist...';
+                document.getElementById('status').className = 'status';
+                
+                console.log(`🔍 Buscando tarefas do projeto: ${selectedProjectId}`);
+                
+                // Buscar tarefas do projeto selecionado
+                const response = await fetch(`https://api.todoist.com/rest/v2/tasks?project_id=${selectedProjectId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${config.todoistToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error(`Erro na API Todoist: ${response.status}`, errorText);
+                    
+                    if (response.status === 403) {
+                        document.getElementById('status').textContent = '❌ Erro 403: Token sem permissão ou projeto inválido';
+                        document.getElementById('status').className = 'status error';
+                        return;
+                    } else if (response.status === 401) {
+                        document.getElementById('status').textContent = '❌ Erro 401: Token inválido ou expirado';
+                        document.getElementById('status').className = 'status error';
+                        return;
+                    }
+                    
+                    throw new Error(`Erro ao buscar tarefas: ${response.status} - ${errorText}`);
+                }
+                
+                const allTasks = await response.json();
+                
+                // Filtrar tarefas apenas do projeto selecionado (dupla verificação)
+                const projectTasks = allTasks.filter(task => task.project_id === selectedProjectId);
+                
+                // Limitar a 50 tarefas para evitar sobrecarga
+                const tasks = projectTasks.slice(0, 50);
+                console.log(`Encontradas ${allTasks.length} tarefas totais, ${projectTasks.length} do projeto selecionado, processando ${tasks.length}`);
+                
+                if (projectTasks.length > 50) {
+                    document.getElementById('status').textContent = `⚠️ Processando ${tasks.length} de ${projectTasks.length} tarefas do projeto (limite aplicado)`;
+                    document.getElementById('status').className = 'status';
+                }
+                
+                let importedCount = 0;
+                
+                const elementType = document.getElementById('miroElementType').value;
+                
+                if (elementType === 'frames') {
+                    // Organizar tarefas em grid - sem frame principal aninhado
+                    const itemsPerRow = Math.ceil(Math.sqrt(tasks.length));
+                    const itemWidth = 250;
+                    const itemHeight = 150;
+                    const padding = 30;
+                    
+                    // Posição inicial
+                    const startX = 100;
+                    const startY = 100;
+                    
+                    const createdFrames = [];
+                    
+                    for (let i = 0; i < tasks.length; i++) {
+                        const task = tasks[i];
+                        try {
+                            const row = Math.floor(i / itemsPerRow);
+                            const col = i % itemsPerRow;
+                            
+                            // Posição absoluta no board
+                            const x = startX + (col * (itemWidth + padding));
+                            const y = startY + (row * (itemHeight + padding));
+                            
+                            // Criar frame para cada tarefa com conteúdo visível
+                            const taskFrame = await miro.board.createFrame({
+                                title: `📋 ${task.content}`,
+                                style: {
+                                    fillColor: task.is_completed ? 'light_green' : 'light_yellow'
+                                },
+                                x: x,
+                                y: y,
+                                width: itemWidth,
+                                height: itemHeight
+                            });
+                            
+                            // Adicionar sticky note próximo ao frame para melhor visualização
+                            await miro.board.createStickyNote({
+                                content: `${task.content}\n\n${task.is_completed ? '✅ Concluído' : '⏳ Pendente'}`,
+                                style: {
+                                    fillColor: task.is_completed ? 'light_green' : 'light_yellow',
+                                    textAlign: 'center',
+                                    fontSize: 12
+                                },
+                                x: x + 10,
+                                y: y + 10,
+                                width: itemWidth - 20,
+                                height: itemHeight - 60
+                            });
+                            
+                            // Adicionar informações extras se disponíveis
+                            if (task.description || task.due) {
+                                await miro.board.createText({
+                                    content: `${task.due ? '📅 ' + new Date(task.due.date).toLocaleDateString() : ''}\n${task.description ? '📝 ' + task.description.substring(0, 50) + '...' : ''}`,
+                                    style: {
+                                        color: '#666666',
+                                        fontSize: 10,
+                                        textAlign: 'left'
+                                    },
+                                    x: x + 20,
+                                    y: y + itemHeight - 30
+                                });
+                            }
+                            
+                            createdFrames.push(taskFrame);
+                            importedCount++;
+                            console.log(`✅ Frame criado: ${task.content}`);
+                            
+                        } catch (itemError) {
+                            console.error('Erro ao criar frame:', itemError);
+                        }
+                    }
+                    
+                    // Centralizar visualização em todos os frames criados
+                    if (createdFrames.length > 0) {
+                        await miro.board.viewport.zoomTo(createdFrames);
+                    }
+                    
+                } else {
+                    // Criar sticky notes organizados em grid
+                    const itemsPerRow = Math.ceil(Math.sqrt(tasks.length));
+                    const itemWidth = 200;
+                    const itemHeight = 200;
+                    const padding = 20;
+                    
+                    for (let i = 0; i < tasks.length; i++) {
+                        const task = tasks[i];
+                        try {
+                            const row = Math.floor(i / itemsPerRow);
+                            const col = i % itemsPerRow;
+                            
+                            const x = col * (itemWidth + padding);
+                            const y = row * (itemHeight + padding);
+                            
+                            const stickyNote = await miro.board.createStickyNote({
+                                content: task.content,
+                                style: {
+                                    fillColor: task.is_completed ? 'light_green' : 'light_yellow',
+                                    textAlign: 'center'
+                                },
+                                x: x,
+                                y: y,
+                                width: itemWidth,
+                                height: itemHeight
+                            });
+                            
+                            importedCount++;
+                            console.log(`✅ Sticky note criado: ${task.content}`);
+                            
+                        } catch (itemError) {
+                            console.error('Erro ao criar sticky note:', itemError);
+                        }
+                    }
+                }
+                
+                document.getElementById('status').textContent = `✅ ${importedCount}/${tasks.length} tarefas importadas para o Miro`;
+                document.getElementById('status').className = 'status';
+                await updateStats();
+                
+            } catch (error) {
+                console.error('Erro na importação:', error);
+                document.getElementById('status').textContent = '❌ Erro na importação';
+                document.getElementById('status').className = 'status error';
+            }
+        }
+
+        // Atualizar estatísticas
+        async function updateStats() {
+            try {
+                // Contar elementos no Miro
+                const stickyNotes = await miro.board.get({ type: 'sticky_note' });
+                const frames = await miro.board.get({ type: 'frame' });
+                const texts = await miro.board.get({ type: 'text' });
+                const totalItems = stickyNotes.length + frames.length + texts.length;
+                document.getElementById('miroCount').textContent = totalItems;
+                
+                // Contar tarefas no Todoist (se configurado)
+                const selectedProjectId = document.getElementById('todoistProject').value;
+                if (config.todoistToken && selectedProjectId) {
+                    try {
+                        const response = await fetch(`https://api.todoist.com/rest/v2/tasks?project_id=${selectedProjectId}`, {
+                            headers: {
+                                'Authorization': `Bearer ${config.todoistToken}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            const tasks = await response.json();
+                            document.getElementById('todoistCount').textContent = tasks.length;
+                        } else {
+                            document.getElementById('todoistCount').textContent = '?';
+                        }
+                    } catch (todoistError) {
+                        document.getElementById('todoistCount').textContent = '?';
+                    }
+                } else {
+                    document.getElementById('todoistCount').textContent = '0';
+                }
+                
+                // Simular contagem sincronizada (pode ser melhorada com localStorage)
+                document.getElementById('syncedCount').textContent = '0';
+                
+            } catch (error) {
+                console.error('Erro ao atualizar stats:', error);
+            }
+        }
+
+        // Carregar frames disponíveis no board
+        async function loadFrames() {
+            try {
+                const frames = await miro.board.get({ type: 'frame' });
+                const select = document.getElementById('specificFrame');
+                
+                // Limpar opções existentes (exceto "Todo o board")
+                select.innerHTML = '<option value="">🌐 Todo o board</option>';
+                
+                frames.forEach(frame => {
+                    const option = document.createElement('option');
+                    option.value = frame.id;
+                    option.textContent = `📦 ${frame.title || 'Frame sem título'}`;
+                    select.appendChild(option);
+                });
+                
+                console.log(`${frames.length} frames encontrados no board`);
+                document.getElementById('status').textContent = `✅ ${frames.length} frames carregados`;
+                document.getElementById('status').className = 'status';
+                
+            } catch (error) {
+                console.error('Erro ao carregar frames:', error);
+                document.getElementById('status').textContent = '❌ Erro ao carregar frames';
+                document.getElementById('status').className = 'status error';
+            }
+        }
+
+        // Debug projeto selecionado
+        async function debugProject() {
+            const selectedProjectId = document.getElementById('todoistProject').value;
+            const token = config.todoistToken;
+            
+            console.log('🐛 Debug Info:');
+            console.log('- Token configurado:', token ? 'Sim' : 'Não');
+            console.log('- Projeto selecionado:', selectedProjectId);
+            console.log('- Config atual:', config);
+            
+            if (!token) {
+                document.getElementById('status').textContent = '❌ Token não configurado';
+                document.getElementById('status').className = 'status error';
+                return;
+            }
+            
+            if (!selectedProjectId) {
+                document.getElementById('status').textContent = '❌ Nenhum projeto selecionado';
+                document.getElementById('status').className = 'status error';
+                return;
+            }
+            
+            try {
+                // Buscar informações do projeto
+                const projectResponse = await fetch(`https://api.todoist.com/rest/v2/projects/${selectedProjectId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (projectResponse.ok) {
+                    const project = await projectResponse.json();
+                    console.log('📋 Projeto encontrado:', project);
+                    
+                    // Buscar tarefas do projeto
+                    const tasksResponse = await fetch(`https://api.todoist.com/rest/v2/tasks?project_id=${selectedProjectId}`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (tasksResponse.ok) {
+                        const tasks = await tasksResponse.json();
+                        console.log(`📝 ${tasks.length} tarefas encontradas no projeto`);
+                        document.getElementById('status').textContent = `✅ Projeto "${project.name}" - ${tasks.length} tarefas`;
+                        document.getElementById('status').className = 'status';
+                    } else {
+                        const errorText = await tasksResponse.text();
+                        console.error('❌ Erro ao buscar tarefas:', tasksResponse.status, errorText);
+                        document.getElementById('status').textContent = `❌ Erro ao buscar tarefas: ${tasksResponse.status}`;
+                        document.getElementById('status').className = 'status error';
+                    }
+                } else {
+                    const errorText = await projectResponse.text();
+                    console.error('❌ Erro ao buscar projeto:', projectResponse.status, errorText);
+                    document.getElementById('status').textContent = `❌ Projeto não encontrado: ${projectResponse.status}`;
+                    document.getElementById('status').className = 'status error';
+                }
+                
+            } catch (error) {
+                console.error('❌ Erro no debug:', error);
+                document.getElementById('status').textContent = '❌ Erro no debug';
+                document.getElementById('status').className = 'status error';
+            }
+        }
+
+        // Inicializar quando DOM estiver pronto
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+{
+  "name": "ticket-management-system",
+  "version": "1.0.0",
+  "description": "Integrated ticket management system with Miro and Todoist synchronization",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "build": "npm run build:server && npm run build:client",
+    "build:server": "cd server && npm run build",
+    "build:client": "cd client && npm run build",
+    "start": "concurrently \"npm run start:server\" \"npm run start:client\"",
+    "start:server": "cd server && npm start",
+    "start:client": "cd client && npm start",
+    "db:generate": "cd server && npx prisma generate",
+    "db:migrate": "cd server && npx prisma migrate dev",
+    "db:studio": "cd server && npx prisma studio",
+    "db:reset": "cd server && npx prisma migrate reset"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "keywords": [
+    "ticket-management",
+    "miro",
+    "todoist",
+    "nextjs",
+    "express",
+    "prisma"
+  ],
+  "author": "",
+  "license": "ISC"
+}

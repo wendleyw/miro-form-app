@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Todoist Sync - Simple</title>
+    <script src="https://miro.com/app/static/sdk/v2/miro.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+            margin: 0;
+            background: #f8f9fa;
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+        }
+        .error {
+            background: #ffebee;
+            border-color: #f44336;
+            color: #c62828;
+        }
+        .success {
+            background: #e8f5e8;
+            border-color: #4caf50;
+            color: #2e7d32;
+        }
+        button {
+            background: #2196f3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #1976d2;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .info {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔄 Todoist Sync</h1>
+        
+        <div id="status" class="status">Inicializando...</div>
+        
+        <div class="info">
+            <strong>Debug Info:</strong>
+            <div id="debug">Carregando...</div>
+        </div>
+        
+        <div>
+            <h3>Teste Básico</h3>
+            <button onclick="testMiroAPI()">Testar Miro API</button>
+            <button onclick="createTestNote()">Criar Sticky Note</button>
+            <button onclick="listNotes()">Listar Sticky Notes</button>
+        </div>
+        
+        <div>
+            <h3>Configuração</h3>
+            <input type="text" id="todoistToken" placeholder="Token Todoist" value="63dd8d664d3e8a0570a2bd7c4981be8421c70975">
+            <input type="text" id="makeUrl" placeholder="URL Make.com">
+            <button onclick="saveConfig()">Salvar Config</button>
+        </div>
+        
+        <div id="results" style="margin-top: 20px;"></div>
+    </div>
+
+    <script>
+        let debugInfo = [];
+        
+        function log(message, type = 'info') {
+            console.log(message);
+            debugInfo.push(`${new Date().toLocaleTimeString()}: ${message}`);
+            document.getElementById('debug').innerHTML = debugInfo.slice(-5).join('<br>');
+            
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+        }
+        
+        function showResults(data) {
+            document.getElementById('results').innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        }
+        
+        // Inicialização
+        async function init() {
+            try {
+                log('Iniciando app...');
+                
+                // Verificar se Miro SDK está disponível
+                if (typeof miro === 'undefined') {
+                    log('❌ Miro SDK não carregado', 'error');
+                    return;
+                }
+                
+                log('✅ Miro SDK carregado');
+                
+                // Verificar se estamos em um board
+                try {
+                    const boardInfo = await miro.board.getInfo();
+                    log(`✅ Board conectado: ${boardInfo.title}`, 'success');
+                    showResults({ boardInfo });
+                } catch (error) {
+                    log(`❌ Erro ao conectar com board: ${error.message}`, 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Erro na inicialização: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testMiroAPI() {
+            try {
+                log('Testando Miro API...');
+                
+                const boardInfo = await miro.board.getInfo();
+                log('✅ Board info obtido');
+                
+                const items = await miro.board.get();
+                log(`✅ Encontrados ${items.length} itens no board`);
+                
+                showResults({
+                    boardInfo,
+                    itemCount: items.length,
+                    items: items.slice(0, 3) // Mostrar apenas os primeiros 3
+                });
+                
+            } catch (error) {
+                log(`❌ Erro no teste: ${error.message}`, 'error');
+                showResults({ error: error.message });
+            }
+        }
+        
+        async function createTestNote() {
+            try {
+                log('Criando sticky note de teste...');
+                
+                const note = await miro.board.createStickyNote({
+                    content: `Teste ${new Date().toLocaleTimeString()}`,
+                    style: {
+                        fillColor: 'light_yellow'
+                    },
+                    x: Math.random() * 500,
+                    y: Math.random() * 500
+                });
+                
+                log('✅ Sticky note criado', 'success');
+                showResults({ createdNote: note });
+                
+            } catch (error) {
+                log(`❌ Erro ao criar note: ${error.message}`, 'error');
+                showResults({ error: error.message });
+            }
+        }
+        
+        async function listNotes() {
+            try {
+                log('Listando sticky notes...');
+                
+                const items = await miro.board.get({
+                    type: 'sticky_note'
+                });
+                
+                log(`✅ Encontrados ${items.length} sticky notes`);
+                showResults({
+                    count: items.length,
+                    notes: items.map(item => ({
+                        id: item.id,
+                        content: item.content,
+                        x: item.x,
+                        y: item.y
+                    }))
+                });
+                
+            } catch (error) {
+                log(`❌ Erro ao listar notes: ${error.message}`, 'error');
+                showResults({ error: error.message });
+            }
+        }
+        
+        async function saveConfig() {
+            try {
+                const config = {
+                    todoistToken: document.getElementById('todoistToken').value,
+                    makeUrl: document.getElementById('makeUrl').value,
+                    savedAt: new Date().toISOString()
+                };
+                
+                await miro.board.storage.set('todoistConfig', config);
+                log('✅ Configuração salva', 'success');
+                showResults({ savedConfig: config });
+                
+            } catch (error) {
+                log(`❌ Erro ao salvar config: ${error.message}`, 'error');
+                showResults({ error: error.message });
+            }
+        }
+        
+        // Inicializar quando DOM estiver pronto
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
+</body>
+</html>

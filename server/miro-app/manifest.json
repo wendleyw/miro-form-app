@@ -1,0 +1,27 @@
+{
+  "name": "Todoist Sync",
+  "description": "Sincroniza sticky notes do Miro com tarefas do Todoist usando Make.com",
+  "version": "1.0.0",
+  "author": "Wendley Wilson",
+  "buildVersion": "1.0.0",
+  "sdkVersion": "2.0",
+  "scopes": [
+    "boards:read",
+    "boards:write"
+  ],
+  "permissions": [
+    "https://api.todoist.com/*",
+    "https://hook.*.make.com/*"
+  ],
+  "icons": {
+    "24": "https://cdn-icons-png.flaticon.com/24/2991/2991148.png",
+    "48": "https://cdn-icons-png.flaticon.com/48/2991/2991148.png"
+  },
+  "tags": [
+    "productivity",
+    "task-management",
+    "sync",
+    "todoist",
+    "automation"
+  ]
+}

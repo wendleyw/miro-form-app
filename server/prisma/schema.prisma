@@ -1,0 +1,160 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Client {
+  id         String   @id @default(cuid())
+  name       String
+  email      String   @unique
+  company    String?
+  accessCode String   @unique @map("access_code")
+  createdAt  DateTime @default(now()) @map("created_at")
+  
+  tickets    Ticket[]
+  
+  @@map("clients")
+}
+
+model Ticket {
+  id           String      @id @default(cuid())
+  ticketNumber String      @unique @map("ticket_number")
+  clientId     String      @map("client_id")
+  title        String
+  description  String?
+  serviceType  ServiceType @map("service_type")
+  priority     Priority    @default(NORMAL)
+  status       TicketStatus @default(PENDING)
+  deadline     DateTime?
+  
+  // Integration IDs
+  miroBoardId        String? @map("miro_board_id")
+  miroClientFrameId  String? @map("miro_client_frame_id")
+  miroDesignFrameId  String? @map("miro_design_frame_id")
+  miroReportFrameId  String? @map("miro_report_frame_id")
+  todoistProjectId   String? @map("todoist_project_id")
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  client            Client             @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  taskMappings      TaskMapping[]
+  brandInfo         BrandInfo?
+  attachments       Attachment[]
+  communicationLogs CommunicationLog[]
+  
+  @@index([clientId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("tickets")
+}
+
+model TaskMapping {
+  id            String   @id @default(cuid())
+  ticketId      String   @map("ticket_id")
+  todoistTaskId String   @map("todoist_task_id")
+  miroWidgetId  String   @map("miro_widget_id")
+  taskName      String   @map("task_name")
+  taskOrder     Int      @map("task_order")
+  completed     Boolean  @default(false)
+  syncedAt      DateTime @default(now()) @map("synced_at")
+  
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  
+  @@index([ticketId])
+  @@map("task_mappings")
+}
+
+model BrandInfo {
+  id            String   @id @default(cuid())
+  ticketId      String   @unique @map("ticket_id")
+  colors        String[]
+  fonts         String[]
+  styleKeywords String[] @map("style_keywords")
+  logoUrl       String?  @map("logo_url")
+  
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  
+  @@map("brand_info")
+}
+
+model Attachment {
+  id         String   @id @default(cuid())
+  ticketId   String   @map("ticket_id")
+  fileName   String   @map("file_name")
+  fileUrl    String   @map("file_url")
+  fileType   String   @map("file_type")
+  uploadedAt DateTime @default(now()) @map("uploaded_at")
+  
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  
+  @@index([ticketId])
+  @@map("attachments")
+}
+
+model CommunicationLog {
+  id         String     @id @default(cuid())
+  ticketId   String     @map("ticket_id")
+  authorType AuthorType @map("author_type")
+  authorName String     @map("author_name")
+  message    String
+  createdAt  DateTime   @default(now()) @map("created_at")
+  
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  
+  @@index([ticketId])
+  @@map("communication_logs")
+}
+
+model WebhookEvent {
+  id        String   @id @default(cuid())
+  source    WebhookSource
+  eventType String   @map("event_type")
+  payload   Json
+  processed Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  @@index([processed])
+  @@index([createdAt])
+  @@map("webhook_events")
+}
+
+enum ServiceType {
+  LOGO
+  WEBSITE
+  BRANDING
+}
+
+enum Priority {
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum TicketStatus {
+  PENDING
+  IN_PROGRESS
+  REVIEW
+  COMPLETED
+}
+
+enum AuthorType {
+  CLIENT
+  DESIGNER
+  SYSTEM
+}
+
+enum WebhookSource {
+  MIRO
+  TODOIST
+}

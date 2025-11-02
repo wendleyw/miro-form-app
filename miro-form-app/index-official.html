@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todoist Sync</title>
+    <script src="https://miro.com/app/static/sdk/v2/miro.js"></script>
+</head>
+<body>
+    <script>
+        async function init() {
+            console.log('🎨 Registrando ícone do Todoist Sync');
+            
+            // Registrar o ícone na barra lateral
+            miro.board.ui.on('icon:click', async () => {
+                console.log('🔄 Ícone clicado, abrindo painel');
+                await miro.board.ui.openPanel({ 
+                    url: 'panel.html', 
+                    height: 600 
+                });
+            });
+            
+            console.log('✅ Ícone registrado com sucesso');
+        }
+
+        init();
+    </script>
+</body>
+</html>

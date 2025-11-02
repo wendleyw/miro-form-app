@@ -1,0 +1,5 @@
+appName: Todoist Sync
+sdkUri: "https://wendleyw.github.io/miro-form-app/index-official.html"
+scopes:
+  - boards:read
+  - boards:write

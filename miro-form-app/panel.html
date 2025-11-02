@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agency Management - Todoist Sync</title>
+    <script src="https://miro.com/app/static/sdk/v2/miro.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 16px;
+            background: #f8f9fa;
+            color: #333;
+            height: 100vh;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+        .header {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #0066cc;
+            text-align: center;
+        }
+        .header h2 {
+            margin: 0;
+            color: #0066cc;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .header p {
+            margin: 5px 0 0 0;
+            color: #666;
+            font-size: 12px;
+        }
+        .section {
+            background: white;
+            margin-bottom: 16px;
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-left: 4px solid #0066cc;
+        }
+        .section h3 {
+            margin: 0 0 12px 0;
+            font-size: 14px;
+            color: #495057;
+            font-weight: bold;
+        }
+        .input-group {
+            margin-bottom: 12px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 12px;
+            color: #6c757d;
+            font-weight: 500;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #0066cc;
+            box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.2);
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 4px 0;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background: #0052a3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .btn-sync {
+            background: #28a745;
+        }
+        .btn-sync:hover {
+            background: #218838;
+        }
+        .btn-danger {
+            background: #dc3545;
+        }
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        .btn-secondary {
+            background: #6c757d;
+        }
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        .status {
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin: 8px 0;
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            text-align: center;
+        }
+        .stat {
+            flex: 1;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            margin: 0 2px;
+        }
+        .stat-number {
+            font-size: 18px;
+            font-weight: bold;
+            color: #0066cc;
+        }
+        .stat-label {
+            font-size: 10px;
+            color: #6c757d;
+        }
+        .container {
+            max-height: 100vh;
+            overflow-y: auto;
+            padding-bottom: 20px;
+        }
+        .selection-info {
+            background: #e3f2fd;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            color: #1565c0;
+            margin-top: 8px;
+        }
+        .grid-controls {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .grid-controls input {
+            width: 60px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #e9ecef;
+            border-radius: 2px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #28a745;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>🏢 Agency Management - Todoist Sync</h2>
+            <p>Gerencie projetos da agência de forma organizada</p>
+        </div>
+        
+        <div class="section">
+            <h3>⚙️ Configuração</h3>
+            <div class="input-group">
+                <label>Token Todoist:</label>
+                <input type="password" id="todoistToken" placeholder="Cole seu token aqui">
+            </div>
+            <div class="input-group">
+                <label>Projeto Todoist:</label>
+                <select id="todoistProject">
+                    <option value="">Selecione um projeto</option>
+                </select>
+            </div>
+            <button onclick="testToken()">🔍 Testar Token</button>
+            <button onclick="debugProject()">🐛 Debug Projeto</button>
+            <button onclick="saveConfig()">💾 Salvar Configuração</button>
+        </div>
+
+        <div class="section">
+            <h3>🔑 Como obter o Token Todoist</h3>
+            <div style="font-size: 12px; color: #6c757d; line-height: 1.4;">
+                1. Acesse <a href="https://todoist.com/prefs/integrations" target="_blank" style="color: #0066cc;">todoist.com/prefs/integrations</a><br>
+                2. Role até "API token"<br>
+                3. Copie o token e cole acima<br>
+                4. Clique "Salvar Configuração"
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>📋 Organização do Projeto (Todoist → Miro)</h3>
+            <div class="grid-controls">
+                <div>
+                    <label style="font-size: 10px;">Colunas:</label>
+                    <input type="number" id="gridColumns" value="4" min="2" max="8">
+                </div>
+                <div>
+                    <label style="font-size: 10px;">Largura:</label>
+                    <input type="number" id="cardWidth" value="280" min="200" max="400">
+                </div>
+                <div>
+                    <label style="font-size: 10px;">Altura:</label>
+                    <input type="number" id="cardHeight" value="180" min="120" max="300">
+                </div>
+            </div>
+            <button class="btn-sync" onclick="syncFromTodoist()">⬇️ Importar Projeto Organizado</button>
+            <div class="selection-info">
+                💡 Importa tarefas do projeto selecionado organizadas em grid visual
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>📤 Sincronização Seletiva (Miro → Todoist)</h3>
+            <div class="input-group">
+                <label>Elementos para sincronizar:</label>
+                <select id="syncMode">
+                    <option value="selected">🎯 Apenas Selecionados</option>
+                    <option value="frame">📦 Frame Específico</option>
+                    <option value="all">🌐 Todo o Board</option>
+                </select>
+            </div>
+            <div class="input-group" id="frameSelection" style="display: none;">
+                <label>Frame específico:</label>
+                <select id="specificFrame">
+                    <option value="">Selecione um frame</option>
+                </select>
+                <button onclick="loadFrames()" style="margin-top: 5px; padding: 5px 10px; font-size: 12px;">🔄 Atualizar Frames</button>
+            </div>
+            <button class="btn-sync" onclick="syncToTodoist()">📤 Sincronizar Selecionados</button>
+            <div class="selection-info">
+                💡 Sincroniza apenas os elementos que você escolher
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>🧹 Limpeza e Organização</h3>
+            <button class="btn-danger" onclick="clearBoard()">🗑️ Limpar Board</button>
+            <button class="btn-secondary" onclick="organizeBoard()">📐 Organizar Elementos</button>
+            <div class="selection-info">
+                ⚠️ Use com cuidado! Limpar board remove todos os elementos.
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>📊 Estatísticas do Projeto</h3>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-number" id="miroCount">0</div>
+                    <div class="stat-label">Elementos Miro</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number" id="todoistCount">0</div>
+                    <div class="stat-label">Tarefas Todoist</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number" id="syncedCount">0</div>
+                    <div class="stat-label">Sincronizados</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="status" class="status">Painel carregado com sucesso!</div>
+        <div class="progress-bar" id="progressBar" style="display: none;">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+    </div>
+
+    <script>
+        // Configuração
+        let config = {
+            todoistToken: '',
+            projectId: null
+        };
+
+        // Inicialização
+        async function init() {
+            try {
+                console.log('🏢 Iniciando Agency Management Panel');
+                
+                await loadConfig();
+                await loadTodoistProjects();
+                await loadFrames();
+                await updateStats();
+                
+                // Setup event listeners
+                document.getElementById('syncMode').addEventListener('change', toggleFrameSelection);
+                
+                document.getElementById('status').textContent = '✅ Painel pronto para uso';
+                
+            } catch (error) {
+                console.error('Erro na inicialização:', error);
+                showStatus('❌ Erro na inicialização', 'error');
+            }
+        }
+
+        // Mostrar status com tipo
+        function showStatus(message, type = 'success') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+        }
+
+        // Mostrar progresso
+        function showProgress(percent) {
+            const progressBar = document.getElementById('progressBar');
+            const progressFill = document.getElementById('progressFill');
+            
+            if (percent === 0) {
+                progressBar.style.display = 'none';
+            } else {
+                progressBar.style.display = 'block';
+                progressFill.style.width = `${percent}%`;
+            }
+        }
+
+        // Toggle frame selection
+        function toggleFrameSelection() {
+            const syncMode = document.getElementById('syncMode').value;
+            const frameSelection = document.getElementById('frameSelection');
+            frameSelection.style.display = syncMode === 'frame' ? 'block' : 'none';
+        }
+
+        // Carregar configuração
+        async function loadConfig() {
+            try {
+                const savedConfig = localStorage.getItem('agencyTodoistConfig');
+                if (savedConfig) {
+                    config = { ...config, ...JSON.parse(savedConfig) };
+                    
+                    document.getElementById('todoistToken').value = config.todoistToken || '';
+                    if (config.projectId) {
+                        document.getElementById('todoistProject').value = config.projectId;
+                    }
+                }
+            } catch (error) {
+                console.error('Erro ao carregar configuração:', error);
+            }
+        }
+
+        // Salvar configuração
+        async function saveConfig() {
+            try {
+                config.todoistToken = document.getElementById('todoistToken').value.trim();
+                config.projectId = document.getElementById('todoistProject').value;
+                
+                if (!config.todoistToken) {
+                    showStatus('❌ Token do Todoist é obrigatório', 'error');
+                    return;
+                }
+                
+                localStorage.setItem('agencyTodoistConfig', JSON.stringify(config));
+                showStatus('✅ Configuração salva');
+                
+                await loadTodoistProjects();
+                
+            } catch (error) {
+                console.error('Erro ao salvar:', error);
+                showStatus('❌ Erro ao salvar configuração', 'error');
+            }
+        }
+
+        // Testar token
+        async function testToken() {
+            const token = document.getElementById('todoistToken').value.trim();
+            
+            if (!token) {
+                showStatus('❌ Digite um token primeiro', 'error');
+                return;
+            }
+            
+            try {
+                showStatus('🔍 Testando token...');
+                
+                const response = await fetch('https://api.todoist.com/rest/v2/projects', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const projects = await response.json();
+                    console.log('🔍 Projetos encontrados:', projects);
+                    
+                    // Testar criação de tarefa
+                    if (projects.length > 0) {
+                        const testProject = projects[0];
+                        const testTaskResponse = await fetch('https://api.todoist.com/rest/v2/tasks', {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                content: '🧪 Teste de conexão - pode deletar',
+                                project_id: testProject.id,
+                                description: 'Tarefa de teste criada pelo Agency Management'
+                            })
+                        });
+                        
+                        if (testTaskResponse.ok) {
+                            const testTask = await testTaskResponse.json();
+                            
+                            // Deletar a tarefa de teste
+                            await fetch(`https://api.todoist.com/rest/v2/tasks/${testTask.id}`, {
+                                method: 'DELETE',
+                                headers: { 'Authorization': `Bearer ${token}` }
+                            });
+                            
+                            showStatus(`✅ Token válido! ${projects.length} projetos encontrados. Permissões OK.`);
+                        } else {
+                            showStatus(`⚠️ Token válido mas sem permissão para criar tarefas`, 'warning');
+                        }
+                    } else {
+                        showStatus(`✅ Token válido! Mas nenhum projeto encontrado.`);
+                    }
+                } else {
+                    showStatus('❌ Token inválido. Verifique as instruções acima.', 'error');
+                }
+                
+            } catch (error) {
+                console.error('Erro ao testar token:', error);
+                showStatus('❌ Erro de conexão', 'error');
+            }
+        }
+
+        // Carregar projetos do Todoist
+        async function loadTodoistProjects() {
+            if (!config.todoistToken) return;
+            
+            try {
+                const response = await fetch('https://api.todoist.com/rest/v2/projects', {
+                    headers: {
+                        'Authorization': `Bearer ${config.todoistToken}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        showStatus('❌ Token inválido. Verifique as instruções acima.', 'error');
+                        return;
+                    }
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const projects = await response.json();
+                const select = document.getElementById('todoistProject');
+                
+                select.innerHTML = '<option value="">Selecione um projeto</option>';
+                projects.forEach(project => {
+                    const option = document.createElement('option');
+                    option.value = project.id;
+                    option.textContent = project.name;
+                    select.appendChild(option);
+                });
+                
+                if (config.projectId) {
+                    select.value = config.projectId;
+                }
+                
+                console.log(`${projects.length} projetos carregados`);
+                showStatus(`✅ ${projects.length} projetos carregados`);
+                
+            } catch (error) {
+                console.error('Erro ao carregar projetos:', error);
+                showStatus('❌ Erro ao carregar projetos do Todoist', 'error');
+            }
+        }
+
+        // Sincronizar do Todoist (Organizado)
+        async function syncFromTodoist() {
+            if (!config.todoistToken) {
+                showStatus('❌ Configure token primeiro', 'error');
+                return;
+            }
+            
+            const selectedProjectId = document.getElementById('todoistProject').value;
+            if (!selectedProjectId) {
+                showStatus('❌ Selecione um projeto primeiro', 'error');
+                return;
+            }
+            
+            try {
+                showStatus('⬇️ Importando projeto organizado...');
+                showProgress(10);
+                
+                // Buscar tarefas do projeto
+                const response = await fetch(`https://api.todoist.com/rest/v2/tasks?project_id=${selectedProjectId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${config.todoistToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Erro ao buscar tarefas: ${response.status}`);
+                }
+                
+                const allTasks = await response.json();
+                const tasks = allTasks.filter(task => task.project_id === selectedProjectId).slice(0, 50);
+                
+                showProgress(30);
+                
+                if (tasks.length === 0) {
+                    showStatus('⚠️ Nenhuma tarefa encontrada no projeto', 'warning');
+                    showProgress(0);
+                    return;
+                }
+                
+                // Configurações do grid
+                const columns = parseInt(document.getElementById('gridColumns').value) || 4;
+                const cardWidth = parseInt(document.getElementById('cardWidth').value) || 280;
+                const cardHeight = parseInt(document.getElementById('cardHeight').value) || 180;
+                const padding = 30;
+                
+                // Posição inicial
+                const startX = 100;
+                const startY = 100;
+                
+                const createdElements = [];
+                let importedCount = 0;
+                
+                for (let i = 0; i < tasks.length; i++) {
+                    const task = tasks[i];
+                    try {
+                        const row = Math.floor(i / columns);
+                        const col = i % columns;
+                        
+                        const x = startX + (col * (cardWidth + padding));
+                        const y = startY + (row * (cardHeight + padding));
+                        
+                        // Criar sticky note organizado
+                        const stickyNote = await miro.board.createStickyNote({
+                            content: `${task.content}\n\n${task.is_completed ? '✅ Concluído' : '⏳ Pendente'}${task.due ? '\n📅 ' + new Date(task.due.date).toLocaleDateString() : ''}`,
+                            style: {
+                                fillColor: task.is_completed ? 'light_green' : 'light_yellow',
+                                textAlign: 'center',
+                                fontSize: 14
+                            },
+                            x: x,
+                            y: y,
+                            width: cardWidth,
+                            height: cardHeight
+                        });
+                        
+                        createdElements.push(stickyNote);
+                        importedCount++;
+                        
+                        // Atualizar progresso
+                        const progress = 30 + ((i + 1) / tasks.length) * 60;
+                        showProgress(progress);
+                        
+                        console.log(`✅ Tarefa importada: ${task.content}`);
+                        
+                    } catch (itemError) {
+                        console.error('Erro ao criar elemento:', itemError);
+                    }
+                }
+                
+                // Centralizar visualização
+                if (createdElements.length > 0) {
+                    await miro.board.viewport.zoomTo(createdElements);
+                }
+                
+                showProgress(100);
+                showStatus(`✅ ${importedCount}/${tasks.length} tarefas importadas e organizadas`);
+                
+                setTimeout(() => showProgress(0), 2000);
+                await updateStats();
+                
+            } catch (error) {
+                console.error('Erro na importação:', error);
+                showStatus('❌ Erro na importação', 'error');
+                showProgress(0);
+            }
+        }
+
+        // Sincronizar para Todoist (Seletivo)
+        async function syncToTodoist() {
+            if (!config.todoistToken) {
+                showStatus('❌ Configure token primeiro', 'error');
+                return;
+            }
+            
+            const selectedProjectId = document.getElementById('todoistProject').value;
+            if (!selectedProjectId) {
+                showStatus('❌ Selecione um projeto primeiro', 'error');
+                return;
+            }
+            
+            try {
+                const syncMode = document.getElementById('syncMode').value;
+                let elementsToSync = [];
+                
+                showStatus('🔄 Coletando elementos...');
+                showProgress(10);
+                
+                if (syncMode === 'selected') {
+                    // Apenas elementos selecionados
+                    const selection = await miro.board.getSelection();
+                    elementsToSync = selection.filter(item => 
+                        item.type === 'sticky_note' || item.type === 'text' || item.type === 'frame'
+                    );
+                    
+                    if (elementsToSync.length === 0) {
+                        showStatus('❌ Nenhum elemento selecionado. Selecione sticky notes, textos ou frames.', 'error');
+                        showProgress(0);
+                        return;
+                    }
+                } else if (syncMode === 'frame') {
+                    // Elementos de um frame específico
+                    const frameId = document.getElementById('specificFrame').value;
+                    if (!frameId) {
+                        showStatus('❌ Selecione um frame específico', 'error');
+                        showProgress(0);
+                        return;
+                    }
+                    
+                    const frame = await miro.board.getById(frameId);
+                    const allItems = await miro.board.get({ type: ['sticky_note', 'text', 'frame'] });
+                    
+                    elementsToSync = allItems.filter(item => {
+                        if (item.id === frameId) return true;
+                        return item.x >= frame.x && item.x <= (frame.x + frame.width) &&
+                               item.y >= frame.y && item.y <= (frame.y + frame.height);
+                    });
+                } else {
+                    // Todo o board
+                    const stickyNotes = await miro.board.get({ type: 'sticky_note' });
+                    const frames = await miro.board.get({ type: 'frame' });
+                    const texts = await miro.board.get({ type: 'text' });
+                    elementsToSync = [...stickyNotes, ...frames, ...texts];
+                }
+                
+                if (elementsToSync.length === 0) {
+                    showStatus('❌ Nenhum elemento encontrado para sincronizar', 'error');
+                    showProgress(0);
+                    return;
+                }
+                
+                showProgress(30);
+                let syncedCount = 0;
+                
+                for (let i = 0; i < elementsToSync.length; i++) {
+                    const item = elementsToSync[i];
+                    try {
+                        // Extrair conteúdo
+                        let content = '';
+                        if (item.type === 'sticky_note') {
+                            content = item.content || 'Sticky Note do Miro';
+                        } else if (item.type === 'frame') {
+                            content = item.title || 'Frame do Miro';
+                        } else if (item.type === 'text') {
+                            content = item.content || 'Texto do Miro';
+                        }
+                        
+                        // Limpar conteúdo
+                        content = content.replace(/<[^>]*>/g, '').trim();
+                        if (!content || content.length < 3) {
+                            content = `📋 ${item.type === 'frame' ? 'Frame' : item.type === 'sticky_note' ? 'Sticky Note' : 'Texto'} do Miro`;
+                        }
+                        
+                        if (content.length > 500) {
+                            content = content.substring(0, 497) + '...';
+                        }
+                        
+                        // Criar tarefa
+                        const taskData = {
+                            content: content,
+                            project_id: selectedProjectId,
+                            description: `Criado do Miro - Tipo: ${item.type} - ID: ${item.id}`,
+                            priority: 1
+                        };
+                        
+                        const response = await fetch('https://api.todoist.com/rest/v2/tasks', {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${config.todoistToken}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(taskData)
+                        });
+                        
+                        if (response.ok) {
+                            syncedCount++;
+                            console.log(`✅ Tarefa criada: ${content}`);
+                        } else {
+                            const errorText = await response.text();
+                            console.error(`❌ Erro ao criar tarefa: ${content}`, response.status, errorText);
+                            
+                            if (response.status === 403 && errorText.includes('Maximum number of items')) {
+                                showStatus('❌ Limite de tarefas atingido no projeto Todoist', 'error');
+                                break;
+                            }
+                        }
+                        
+                        // Atualizar progresso
+                        const progress = 30 + ((i + 1) / elementsToSync.length) * 60;
+                        showProgress(progress);
+                        
+                        // Pausa para evitar rate limiting
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                        
+                    } catch (itemError) {
+                        console.error('Erro ao processar item:', itemError);
+                    }
+                }
+                
+                showProgress(100);
+                showStatus(`✅ ${syncedCount}/${elementsToSync.length} elementos sincronizados`);
+                
+                setTimeout(() => showProgress(0), 2000);
+                await updateStats();
+                
+            } catch (error) {
+                console.error('Erro na sincronização:', error);
+                showStatus('❌ Erro na sincronização', 'error');
+                showProgress(0);
+            }
+        }
+
+        // Limpar board
+        async function clearBoard() {
+            if (!confirm('⚠️ Tem certeza que deseja limpar todo o board? Esta ação não pode ser desfeita.')) {
+                return;
+            }
+            
+            try {
+                showStatus('🗑️ Limpando board...');
+                
+                const allItems = await miro.board.get();
+                await miro.board.remove(allItems);
+                
+                showStatus('✅ Board limpo com sucesso');
+                await updateStats();
+                
+            } catch (error) {
+                console.error('Erro ao limpar board:', error);
+                showStatus('❌ Erro ao limpar board', 'error');
+            }
+        }
+
+        // Organizar elementos do board
+        async function organizeBoard() {
+            try {
+                showStatus('📐 Organizando elementos...');
+                
+                const stickyNotes = await miro.board.get({ type: 'sticky_note' });
+                
+                if (stickyNotes.length === 0) {
+                    showStatus('⚠️ Nenhum elemento para organizar', 'warning');
+                    return;
+                }
+                
+                const columns = 5;
+                const cardWidth = 250;
+                const cardHeight = 200;
+                const padding = 30;
+                
+                for (let i = 0; i < stickyNotes.length; i++) {
+                    const row = Math.floor(i / columns);
+                    const col = i % columns;
+                    
+                    const x = 100 + (col * (cardWidth + padding));
+                    const y = 100 + (row * (cardHeight + padding));
+                    
+                    await stickyNotes[i].sync();
+                    stickyNotes[i].x = x;
+                    stickyNotes[i].y = y;
+                }
+                
+                showStatus('✅ Elementos organizados em grid');
+                
+            } catch (error) {
+                console.error('Erro ao organizar board:', error);
+                showStatus('❌ Erro ao organizar elementos', 'error');
+            }
+        }
+
+        // Atualizar estatísticas
+        async function updateStats() {
+            try {
+                const stickyNotes = await miro.board.get({ type: 'sticky_note' });
+                const frames = await miro.board.get({ type: 'frame' });
+                const texts = await miro.board.get({ type: 'text' });
+                const totalItems = stickyNotes.length + frames.length + texts.length;
+                document.getElementById('miroCount').textContent = totalItems;
+                
+                const selectedProjectId = document.getElementById('todoistProject').value;
+                if (config.todoistToken && selectedProjectId) {
+                    try {
+                        const response = await fetch(`https://api.todoist.com/rest/v2/tasks?project_id=${selectedProjectId}`, {
+                            headers: {
+                                'Authorization': `Bearer ${config.todoistToken}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            const tasks = await response.json();
+                            document.getElementById('todoistCount').textContent = tasks.length;
+                        } else {
+                            document.getElementById('todoistCount').textContent = '?';
+                        }
+                    } catch (todoistError) {
+                        document.getElementById('todoistCount').textContent = '?';
+                    }
+                } else {
+                    document.getElementById('todoistCount').textContent = '0';
+                }
+                
+                document.getElementById('syncedCount').textContent = '0';
+                
+            } catch (error) {
+                console.error('Erro ao atualizar stats:', error);
+            }
+        }
+
+        // Carregar frames
+        async function loadFrames() {
+            try {
+                const frames = await miro.board.get({ type: 'frame' });
+                const select = document.getElementById('specificFrame');
+                
+                select.innerHTML = '<option value="">Selecione um frame</option>';
+                
+                frames.forEach(frame => {
+                    const option = document.createElement('option');
+                    option.value = frame.id;
+                    option.textContent = `📦 ${frame.title || 'Frame sem título'}`;
+                    select.appendChild(option);
+                });
+                
+                console.log(`${frames.length} frames encontrados`);
+                
+            } catch (error) {
+                console.error('Erro ao carregar frames:', error);
+            }
+        }
+
+        // Debug projeto
+        async function debugProject() {
+            const selectedProjectId = document.getElementById('todoistProject').value;
+            const token = config.todoistToken;
+            
+            console.log('🐛 Debug Info:');
+            console.log('- Token configurado:', token ? 'Sim' : 'Não');
+            console.log('- Projeto selecionado:', selectedProjectId);
+            console.log('- Config atual:', config);
+            
+            if (!token) {
+                showStatus('❌ Token não configurado', 'error');
+                return;
+            }
+            
+            if (!selectedProjectId) {
+                showStatus('❌ Nenhum projeto selecionado', 'error');
+                return;
+            }
+            
+            try {
+                const projectResponse = await fetch(`https://api.todoist.com/rest/v2/projects/${selectedProjectId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (projectResponse.ok) {
+                    const project = await projectResponse.json();
+                    console.log('📋 Projeto encontrado:', project);
+                    
+                    const tasksResponse = await fetch(`https://api.todoist.com/rest/v2/tasks?project_id=${selectedProjectId}`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (tasksResponse.ok) {
+                        const tasks = await tasksResponse.json();
+                        console.log(`📝 ${tasks.length} tarefas encontradas`);
+                        showStatus(`✅ Projeto "${project.name}" - ${tasks.length} tarefas`);
+                    } else {
+                        showStatus(`❌ Erro ao buscar tarefas: ${tasksResponse.status}`, 'error');
+                    }
+                } else {
+                    showStatus(`❌ Projeto não encontrado: ${projectResponse.status}`, 'error');
+                }
+                
+            } catch (error) {
+                console.error('❌ Erro no debug:', error);
+                showStatus('❌ Erro no debug', 'error');
+            }
+        }
+
+        // Inicializar
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
+</body>
+</html>
