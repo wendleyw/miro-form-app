@@ -2,93 +2,19 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Todoist Sync</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Agency Management - Todoist Sync</title>
     <script src="https://miro.com/app/static/sdk/v2/miro.js"></script>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h2>🔄 Todoist Sync</h2>
-            <div class="version">v1.0</div>
-        </div>
-        
-        <div class="config-section">
-            <h3>⚙️ Configuração</h3>
-            <div class="input-group">
-                <label>Token Todoist:</label>
-                <input type="password" id="todoistToken" placeholder="Cole seu token aqui" 
-                       value="63dd8d664d3e8a0570a2bd7c4981be8421c70975">
-            </div>
-            <div class="input-group">
-                <label>URL Make.com:</label>
-                <input type="url" id="makeWebhookUrl" placeholder="https://hook.eu1.make.com/...">
-            </div>
-            <div class="input-group">
-                <label>Projeto Todoist:</label>
-                <select id="todoistProject">
-                    <option value="">Selecione um projeto</option>
-                </select>
-            </div>
-            <button id="saveConfig" class="btn-primary">💾 Salvar Configuração</button>
-        </div>
-
-        <div class="sync-section">
-            <h3>🔄 Sincronização</h3>
-            <div class="sync-buttons">
-                <button id="syncToTodoist" class="btn-sync">📝 Miro → Todoist</button>
-                <button id="syncFromTodoist" class="btn-sync">⬇️ Todoist → Miro</button>
-            </div>
-            <div class="auto-sync">
-                <label>
-                    <input type="checkbox" id="autoSyncEnabled"> 
-                    Auto Sync (30s)
-                </label>
-            </div>
-        </div>
-
-        <div class="stats-section">
-            <h3>📊 Estatísticas</h3>
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <div class="stat-number" id="miroCount">0</div>
-                    <div class="stat-label">Sticky Notes</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number" id="todoistCount">0</div>
-                    <div class="stat-label">Tarefas Todoist</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number" id="syncedCount">0</div>
-                    <div class="stat-label">Sincronizados</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="status-section">
-            <h3>📋 Status</h3>
-            <div id="status" class="status-message">Pronto para sincronizar</div>
-            <div class="log-container">
-                <div id="log" class="log"></div>
-            </div>
-        </div>
-
-        <div class="help-section">
-            <details>
-                <summary>❓ Como usar</summary>
-                <div class="help-content">
-                    <ol>
-                        <li>Configure seu token do Todoist</li>
-                        <li>Configure a URL do Make.com</li>
-                        <li>Selecione um projeto no Todoist</li>
-                        <li>Clique "Miro → Todoist" para enviar sticky notes</li>
-                        <li>Ative Auto Sync para sincronização automática</li>
-                    </ol>
-                </div>
-            </details>
+    <div style="padding: 20px; text-align: center; font-family: Arial, sans-serif;">
+        <h2>🏢 Agency Management</h2>
+        <p>Clique no ícone na toolbar para abrir o painel</p>
+        <div style="margin: 20px 0; padding: 10px; background: #f0f8ff; border-radius: 8px;">
+            <p style="margin: 0; font-size: 14px; color: #666;">
+                📌 Procure o ícone do Todoist Sync na toolbar lateral do Miro
+            </p>
         </div>
     </div>
-
     <script src="app.js"></script>
 </body>
 </html>
