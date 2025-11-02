@@ -134,6 +134,13 @@
                 <option value="">Selecione um projeto</option>
             </select>
         </div>
+        <div class="input-group">
+            <label>Tipo de elemento no Miro:</label>
+            <select id="miroElementType">
+                <option value="frames">📦 Frames (Recomendado)</option>
+                <option value="sticky_notes">📝 Sticky Notes</option>
+            </select>
+        </div>
         <button onclick="testToken()">🔍 Testar Token</button>
         <button onclick="saveConfig()">💾 Salvar Configuração</button>
     </div>
@@ -212,6 +219,9 @@
                     if (config.projectId) {
                         document.getElementById('todoistProject').value = config.projectId;
                     }
+                    if (config.elementType) {
+                        document.getElementById('miroElementType').value = config.elementType;
+                    }
                 }
             } catch (error) {
                 console.error('Erro ao carregar configuração:', error);
@@ -224,6 +234,7 @@
                 config.todoistToken = document.getElementById('todoistToken').value.trim();
                 config.makeWebhookUrl = document.getElementById('makeWebhookUrl').value.trim();
                 config.projectId = document.getElementById('todoistProject').value;
+                config.elementType = document.getElementById('miroElementType').value;
                 
                 if (!config.todoistToken) {
                     document.getElementById('status').textContent = '❌ Token do Todoist é obrigatório';
@@ -344,21 +355,36 @@
             }
             
             try {
-                document.getElementById('status').textContent = '🔄 Sincronizando sticky notes...';
+                document.getElementById('status').textContent = '🔄 Sincronizando elementos do Miro...';
                 document.getElementById('status').className = 'status';
                 
-                const items = await miro.board.get({ type: 'sticky_note' });
-                console.log(`Encontrados ${items.length} sticky notes`);
+                // Buscar diferentes tipos de elementos
+                const stickyNotes = await miro.board.get({ type: 'sticky_note' });
+                const frames = await miro.board.get({ type: 'frame' });
+                const texts = await miro.board.get({ type: 'text' });
+                
+                const allItems = [...stickyNotes, ...frames, ...texts];
+                console.log(`Encontrados ${allItems.length} elementos (${stickyNotes.length} sticky notes, ${frames.length} frames, ${texts.length} textos)`);
                 
                 let syncedCount = 0;
                 
-                for (const item of items) {
+                for (const item of allItems) {
                     try {
+                        // Extrair conteúdo baseado no tipo
+                        let content = '';
+                        if (item.type === 'sticky_note') {
+                            content = item.content || 'Sticky Note do Miro';
+                        } else if (item.type === 'frame') {
+                            content = item.title || 'Frame do Miro';
+                        } else if (item.type === 'text') {
+                            content = item.content || 'Texto do Miro';
+                        }
+                        
                         // Criar tarefa no Todoist
                         const taskData = {
-                            content: item.content || 'Tarefa do Miro',
+                            content: content,
                             project_id: config.projectId,
-                            description: `Criado do Miro - ID: ${item.id}`
+                            description: `Criado do Miro - Tipo: ${item.type} - ID: ${item.id}`
                         };
                         
                         const response = await fetch('https://api.todoist.com/rest/v2/tasks', {
@@ -372,9 +398,9 @@
                         
                         if (response.ok) {
                             syncedCount++;
-                            console.log(`✅ Tarefa criada: ${item.content}`);
+                            console.log(`✅ Tarefa criada: ${content}`);
                         } else {
-                            console.error(`❌ Erro ao criar tarefa: ${item.content}`, response.status);
+                            console.error(`❌ Erro ao criar tarefa: ${content}`, response.status);
                         }
                         
                     } catch (itemError) {
@@ -382,7 +408,7 @@
                     }
                 }
                 
-                document.getElementById('status').textContent = `✅ ${syncedCount}/${items.length} tarefas criadas no Todoist`;
+                document.getElementById('status').textContent = `✅ ${syncedCount}/${allItems.length} elementos sincronizados para o Todoist`;
                 document.getElementById('status').className = 'status';
                 await updateStats();
                 
@@ -427,24 +453,110 @@
                 
                 let importedCount = 0;
                 
-                for (const task of tasks) {
+                const elementType = document.getElementById('miroElementType').value;
+                
+                if (elementType === 'frames') {
+                    // Criar frame principal para organizar as tarefas
+                    const mainFrame = await miro.board.createFrame({
+                    title: `Tarefas do Todoist - ${new Date().toLocaleDateString()}`,
+                    style: {
+                        fillColor: 'light_blue'
+                    },
+                    x: 0,
+                    y: 0,
+                    width: Math.max(800, Math.ceil(Math.sqrt(tasks.length)) * 200),
+                    height: Math.max(600, Math.ceil(tasks.length / Math.ceil(Math.sqrt(tasks.length))) * 150)
+                });
+                
+                console.log(`📦 Frame principal criado: ${mainFrame.id}`);
+                
+                // Organizar tarefas em grid dentro do frame
+                const itemsPerRow = Math.ceil(Math.sqrt(tasks.length));
+                const itemWidth = 180;
+                const itemHeight = 120;
+                const padding = 20;
+                
+                for (let i = 0; i < tasks.length; i++) {
+                    const task = tasks[i];
                     try {
-                        // Criar sticky note no Miro
-                        const stickyNote = await miro.board.createStickyNote({
+                        const row = Math.floor(i / itemsPerRow);
+                        const col = i % itemsPerRow;
+                        
+                        // Posição dentro do frame principal
+                        const x = padding + (col * (itemWidth + padding));
+                        const y = padding + (row * (itemHeight + padding));
+                        
+                        // Criar frame individual para cada tarefa
+                        const taskFrame = await miro.board.createFrame({
+                            title: task.content,
+                            style: {
+                                fillColor: task.is_completed ? 'light_green' : 'light_yellow'
+                            },
+                            x: x,
+                            y: y,
+                            width: itemWidth,
+                            height: itemHeight,
+                            parentId: mainFrame.id
+                        });
+                        
+                        // Adicionar texto dentro do frame
+                        await miro.board.createText({
                             content: task.content,
                             style: {
-                                fillColor: task.is_completed ? 'light_green' : 'light_yellow',
+                                color: '#1a1a1a',
+                                fontSize: 14,
                                 textAlign: 'center'
                             },
-                            x: Math.random() * 1000, // Posição aleatória
-                            y: Math.random() * 1000
+                            x: x + itemWidth/2,
+                            y: y + itemHeight/2,
+                            parentId: taskFrame.id
                         });
                         
                         importedCount++;
-                        console.log(`✅ Sticky note criado: ${task.content}`);
+                        console.log(`✅ Frame criado: ${task.content}`);
                         
                     } catch (itemError) {
-                        console.error('Erro ao criar sticky note:', itemError);
+                        console.error('Erro ao criar frame:', itemError);
+                    }
+                }
+                
+                    // Centralizar a visualização no frame principal
+                    await miro.board.viewport.zoomTo(mainFrame);
+                    
+                } else {
+                    // Criar sticky notes organizados em grid
+                    const itemsPerRow = Math.ceil(Math.sqrt(tasks.length));
+                    const itemWidth = 200;
+                    const itemHeight = 200;
+                    const padding = 20;
+                    
+                    for (let i = 0; i < tasks.length; i++) {
+                        const task = tasks[i];
+                        try {
+                            const row = Math.floor(i / itemsPerRow);
+                            const col = i % itemsPerRow;
+                            
+                            const x = col * (itemWidth + padding);
+                            const y = row * (itemHeight + padding);
+                            
+                            const stickyNote = await miro.board.createStickyNote({
+                                content: task.content,
+                                style: {
+                                    fillColor: task.is_completed ? 'light_green' : 'light_yellow',
+                                    textAlign: 'center'
+                                },
+                                x: x,
+                                y: y,
+                                width: itemWidth,
+                                height: itemHeight
+                            });
+                            
+                            importedCount++;
+                            console.log(`✅ Sticky note criado: ${task.content}`);
+                            
+                        } catch (itemError) {
+                            console.error('Erro ao criar sticky note:', itemError);
+                        }
                     }
                 }
                 
@@ -462,9 +574,12 @@
         // Atualizar estatísticas
         async function updateStats() {
             try {
-                // Contar sticky notes no Miro
-                const items = await miro.board.get({ type: 'sticky_note' });
-                document.getElementById('miroCount').textContent = items.length;
+                // Contar elementos no Miro
+                const stickyNotes = await miro.board.get({ type: 'sticky_note' });
+                const frames = await miro.board.get({ type: 'frame' });
+                const texts = await miro.board.get({ type: 'text' });
+                const totalItems = stickyNotes.length + frames.length + texts.length;
+                document.getElementById('miroCount').textContent = totalItems;
                 
                 // Contar tarefas no Todoist (se configurado)
                 if (config.todoistToken && config.projectId) {
