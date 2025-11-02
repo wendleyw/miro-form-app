@@ -331,23 +331,58 @@
 
         // Sincronizar para Todoist
         async function syncToTodoist() {
-            if (!config.todoistToken || !config.makeWebhookUrl) {
-                document.getElementById('status').textContent = '❌ Configure token e URL primeiro';
+            if (!config.todoistToken) {
+                document.getElementById('status').textContent = '❌ Configure token primeiro';
+                document.getElementById('status').className = 'status error';
+                return;
+            }
+            
+            if (!config.projectId) {
+                document.getElementById('status').textContent = '❌ Selecione um projeto primeiro';
                 document.getElementById('status').className = 'status error';
                 return;
             }
             
             try {
-                document.getElementById('status').textContent = '🔄 Sincronizando...';
+                document.getElementById('status').textContent = '🔄 Sincronizando sticky notes...';
                 document.getElementById('status').className = 'status';
                 
                 const items = await miro.board.get({ type: 'sticky_note' });
                 console.log(`Encontrados ${items.length} sticky notes`);
                 
-                // Simular sincronização (implementar lógica real aqui)
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                let syncedCount = 0;
                 
-                document.getElementById('status').textContent = `✅ ${items.length} itens sincronizados`;
+                for (const item of items) {
+                    try {
+                        // Criar tarefa no Todoist
+                        const taskData = {
+                            content: item.content || 'Tarefa do Miro',
+                            project_id: config.projectId,
+                            description: `Criado do Miro - ID: ${item.id}`
+                        };
+                        
+                        const response = await fetch('https://api.todoist.com/rest/v2/tasks', {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${config.todoistToken}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(taskData)
+                        });
+                        
+                        if (response.ok) {
+                            syncedCount++;
+                            console.log(`✅ Tarefa criada: ${item.content}`);
+                        } else {
+                            console.error(`❌ Erro ao criar tarefa: ${item.content}`, response.status);
+                        }
+                        
+                    } catch (itemError) {
+                        console.error('Erro ao processar item:', itemError);
+                    }
+                }
+                
+                document.getElementById('status').textContent = `✅ ${syncedCount}/${items.length} tarefas criadas no Todoist`;
                 document.getElementById('status').className = 'status';
                 await updateStats();
                 
@@ -366,14 +401,54 @@
                 return;
             }
             
+            if (!config.projectId) {
+                document.getElementById('status').textContent = '❌ Selecione um projeto primeiro';
+                document.getElementById('status').className = 'status error';
+                return;
+            }
+            
             try {
-                document.getElementById('status').textContent = '⬇️ Importando...';
+                document.getElementById('status').textContent = '⬇️ Importando tarefas do Todoist...';
                 document.getElementById('status').className = 'status';
                 
-                // Simular importação (implementar lógica real aqui)
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                // Buscar tarefas do projeto selecionado
+                const response = await fetch(`https://api.todoist.com/rest/v2/tasks?project_id=${config.projectId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${config.todoistToken}`
+                    }
+                });
                 
-                document.getElementById('status').textContent = '✅ Tarefas importadas';
+                if (!response.ok) {
+                    throw new Error(`Erro ao buscar tarefas: ${response.status}`);
+                }
+                
+                const tasks = await response.json();
+                console.log(`Encontradas ${tasks.length} tarefas no Todoist`);
+                
+                let importedCount = 0;
+                
+                for (const task of tasks) {
+                    try {
+                        // Criar sticky note no Miro
+                        const stickyNote = await miro.board.createStickyNote({
+                            content: task.content,
+                            style: {
+                                fillColor: task.is_completed ? 'light_green' : 'light_yellow',
+                                textAlign: 'center'
+                            },
+                            x: Math.random() * 1000, // Posição aleatória
+                            y: Math.random() * 1000
+                        });
+                        
+                        importedCount++;
+                        console.log(`✅ Sticky note criado: ${task.content}`);
+                        
+                    } catch (itemError) {
+                        console.error('Erro ao criar sticky note:', itemError);
+                    }
+                }
+                
+                document.getElementById('status').textContent = `✅ ${importedCount}/${tasks.length} tarefas importadas para o Miro`;
                 document.getElementById('status').className = 'status';
                 await updateStats();
                 
@@ -387,11 +462,33 @@
         // Atualizar estatísticas
         async function updateStats() {
             try {
+                // Contar sticky notes no Miro
                 const items = await miro.board.get({ type: 'sticky_note' });
                 document.getElementById('miroCount').textContent = items.length;
                 
-                // Simular contagem do Todoist
-                document.getElementById('todoistCount').textContent = '0';
+                // Contar tarefas no Todoist (se configurado)
+                if (config.todoistToken && config.projectId) {
+                    try {
+                        const response = await fetch(`https://api.todoist.com/rest/v2/tasks?project_id=${config.projectId}`, {
+                            headers: {
+                                'Authorization': `Bearer ${config.todoistToken}`
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            const tasks = await response.json();
+                            document.getElementById('todoistCount').textContent = tasks.length;
+                        } else {
+                            document.getElementById('todoistCount').textContent = '?';
+                        }
+                    } catch (todoistError) {
+                        document.getElementById('todoistCount').textContent = '?';
+                    }
+                } else {
+                    document.getElementById('todoistCount').textContent = '0';
+                }
+                
+                // Simular contagem sincronizada (pode ser melhorada com localStorage)
                 document.getElementById('syncedCount').textContent = '0';
                 
             } catch (error) {
